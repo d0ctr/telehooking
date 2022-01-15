@@ -1,0 +1,22 @@
+{
+  "name": "bilderberg_butler",
+  "version": "0.1.0",
+  "description": "Discord bot for bilderberg club",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/d0ctr/bilderberg_butler.git"
+  },
+  "author": "@d0ctr (Danila Vasilev)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/d0ctr/bilderberg_butler/issues"
+  },
+  "homepage": "https://github.com/d0ctr/bilderberg_butler#readme",
+  "dependencies": {
+    "discord.js": "^13.6.0"
+  }
+}

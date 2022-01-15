@@ -1,0 +1,8 @@
+# Packeges lock
+package-lock.json
+
+# Node.js modules
+node_modules/*
+
+# Secrets
+config.json
