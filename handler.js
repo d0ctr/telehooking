@@ -48,8 +48,6 @@ class WordleScheduler {
 
 }
 
-const wordleScheduler = new WordleScheduler();
-
 let guild_to_wordle = {};
 
 const handler = {
@@ -68,11 +66,13 @@ const handler = {
 
             guild_to_wordle[interaction.guild.id] = new WordleScheduler();
             await guild_to_wordle[interaction.guild.id].start(interaction.guild);
+            
             return interaction.reply(`Starting new Wordle scheduler\nNext Wordle is in ${Math.floor((guild_to_wordle[interaction.guild.id].next_start - Date.now()) / 60000)} mins, get ready!`);
         }
         else if (interaction.options.getSubcommand() === 'stop') {
             if (guild_to_wordle[interaction.guild.id] && guild_to_wordle[interaction.guild.id].running) {
-                wordleScheduler.stop();
+                guild_to_wordle[interaction.guild.id].stop();
+
                 return interaction.reply('Stopped Wordle scheduler');
             }
             else {

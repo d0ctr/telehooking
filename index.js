@@ -1,6 +1,8 @@
 const Discord = require('discord.js');
-const config = require('./config.json');
+const dotenv = require('dotenv');
 const handle_command = require('./handler');
+
+dotenv.config();
 
 const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS] });
 
@@ -19,4 +21,4 @@ client.on('interactionCreate', async interaction => {
 });
 
 
-client.login(config.TOKEN);
+client.login(process.env.TOKEN);
