@@ -2,6 +2,9 @@ class WordleScheduler {
     constructor() {
         this.wordle_url = 'https://www.powerlanguage.co.uk/wordle/';
         this.event_name = "Угадывай слово";
+        this.start_hour = 22;
+        this.start_min = 0;
+        this.event_duration_ms = (23 * 60 + 55) * 60 * 1000;
         this.running = false;
     }
 
@@ -24,15 +27,15 @@ class WordleScheduler {
 
     async _start_scheduling() {
         let now = new Date();
-        now.setUTCMinutes(0, 0, 0);
+        now.setUTCSeconds(0, 0);
 
-        if (now.getUTCHours() >= 22) {
+        if ((now.getUTCHours() == this.start_hour) && (now.getUTCMinutes() >= this.start_min) || (now.getUTCHours() > this.start_hour)) {
             now.setUTCDate(now.getUTCDate() + 1);
         }
         
-        this.next_start = now.setUTCHours(22);
+        this.next_start = now.setUTCHours(this.start_hour, this.start_min);
 
-        this.next_end = now.setUTCHours(now.getUTCHours() + 23, 55);
+        this.next_end = now.setTime(now.getTime() + this.event_duration_ms);
 
         await this._guild.scheduledEvents.create({
             name: this.event_name, 
@@ -43,12 +46,50 @@ class WordleScheduler {
             entityMetadata: { location: this.wordle_url }
         });
 
-        this._schedule_interval = setInterval(this._start_scheduling, this.next_end - Date.now());
+        this._schedule_interval = setInterval(this._start_scheduling.bind(this), this.next_end - Date.now());
     }
 
 }
 
 let guild_to_wordle = {};
+
+const wordle_handler = {
+    'start': async (interaction) => {
+        if (guild_to_wordle[interaction.guild.id] && guild_to_wordle[interaction.guild.id].running) {
+            return interaction.reply('Scheduler is already running!');
+        }
+
+        if (!guild_to_wordle[interaction.guild.id]) guild_to_wordle[interaction.guild.id] = new WordleScheduler();
+        await guild_to_wordle[interaction.guild.id].start(interaction.guild);
+        
+        return interaction.reply(`Starting Wordle scheduler\nNext Wordle is in ${Math.floor((guild_to_wordle[interaction.guild.id].next_start - Date.now()) / 60000)} mins, get ready!`);
+    },
+    'stop': async (interaction) => {
+        if (guild_to_wordle[interaction.guild.id] && guild_to_wordle[interaction.guild.id].running) {
+            guild_to_wordle[interaction.guild.id].stop();
+
+            return interaction.reply('Stopped Wordle scheduler');
+        }
+        else {
+            return interaction.reply('There is no running scheduler right now');
+        }
+    },
+    'status': async (interaction) => {
+        if (guild_to_wordle[interaction.guild.id] && guild_to_wordle[interaction.guild.id].running) {
+            return interaction.reply(`There is currently running Wordle scheduler.\nNext Wordle is in ${Math.floor((guild_to_wordle[interaction.guild.id].next_start - Date.now()) / 60000)} mins, get ready!`);
+        }
+        else {
+            return interaction.reply('There is no currently running Wordle scheduler.\nYou can start one with `/wordle start`');
+        }
+    },
+    'clearall': async (interaction) => {
+        let events = await interaction.guild.scheduledEvents.fetch();
+        await events.forEach(async (event) => {
+            await interaction.guild.scheduledEvents.delete(event);
+        });
+        return interaction.reply('All events are deleted');
+    }
+};
 
 const handler = {
     'ping': async (interaction) => interaction.reply('pong'),
@@ -59,37 +100,19 @@ const handler = {
         return interaction.reply(`Your username: ${interaction.user.username}\nYour ID: ${interaction.user.id}`);
     },
     'wordle': async (interaction) => {
-        if (interaction.options.getSubcommand() === 'start') {
-            if (guild_to_wordle[interaction.guild.id] && guild_to_wordle[interaction.guild.id].running) {
-                return interaction.reply('Scheduler is already running!');
-            }
-
-            guild_to_wordle[interaction.guild.id] = new WordleScheduler();
-            await guild_to_wordle[interaction.guild.id].start(interaction.guild);
-            
-            return interaction.reply(`Starting new Wordle scheduler\nNext Wordle is in ${Math.floor((guild_to_wordle[interaction.guild.id].next_start - Date.now()) / 60000)} mins, get ready!`);
+        if (!wordle_handler[interaction.options.getSubcommand()]) {
+            return interaction.reply('There is no such command.');
         }
-        else if (interaction.options.getSubcommand() === 'stop') {
-            if (guild_to_wordle[interaction.guild.id] && guild_to_wordle[interaction.guild.id].running) {
-                guild_to_wordle[interaction.guild.id].stop();
-
-                return interaction.reply('Stopped Wordle scheduler');
-            }
-            else {
-                return interaction.reply('There is no running scheduler right now');
-            }
-        }
-
+        return wordle_handler[interaction.options.getSubcommand()](interaction)
 
     }
 };
 
 async function handle_command(interaction) {
-    if (!(interaction.commandName in handler)) {
-        return;
+    if (!handler[interaction.commandName]) {
+        return interaction.reply('There is no such command.');
     }
-
-    await handler[interaction.commandName](interaction);
+    return handler[interaction.commandName](interaction);
 }
 
 module.exports = handle_command;

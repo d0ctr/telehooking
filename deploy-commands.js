@@ -24,11 +24,19 @@ const commands = [
         .addSubcommand(subcommand =>
             subcommand
                 .setName('start')
-                .setDescription('Start new Wordle scheduler'))
+                .setDescription('Start Wordle Scheduler'))
         .addSubcommand(subcommand => 
             subcommand
                 .setName('stop')
-                .setDescription('Stop new Wordle scheduler'))
+                .setDescription('Stop Wordle Scheduler'))
+        .addSubcommand(subcommand => 
+            subcommand
+                .setName('status')
+                .setDescription('Show info about Wordle Scheduler'))
+        .addSubcommand(subcommand => 
+            subcommand
+                .setName('clearall')
+                .setDescription('WARNING!!! Will clear all scheduled events'))
         
 ].map(command => command.toJSON());
 
@@ -37,7 +45,3 @@ const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
 rest.put(Routes.applicationCommands(process.env.APP_ID), { body: commands })
 	.then(() => console.log('Successfully registered application commands.'))
 	.catch(console.error);
-
-rest.put(Routes.applicationGuildCommands(process.env.APP_ID, process.env.DEV_GUILD_ID), { body: commands })
-    .then(() => console.log('Successfully registered application guild commands.'))
-    .catch(console.error);
