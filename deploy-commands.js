@@ -37,6 +37,10 @@ const commands = [
             subcommand
                 .setName('clearall')
                 .setDescription('WARNING!!! Will clear all scheduled events'))
+        .addSubcommand(subcommand => 
+            subcommand
+                .setName('whitelist')
+                .setDescription('WARNING!!! Will clear all scheduled events and schedulers'))
         
 ].map(command => command.toJSON());
 
