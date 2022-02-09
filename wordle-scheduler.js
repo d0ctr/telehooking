@@ -23,6 +23,8 @@ class WordleScheduler {
     stop() {
         if(this._schedule_interval && this.running) {
             clearInterval(this._schedule_interval);
+        }
+        if (this.running) {
             this.running = false;
             this.dump();
         }
