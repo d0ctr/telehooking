@@ -128,7 +128,7 @@ class WordleScheduler {
         this.event_selector = data.event_selector;
         this.next_start = data.next_start ? new Number(data.next_start): undefined;
         this.next_end = data.next_end ? new Number(data.next_end) : undefined;
-        this.running = data.running ? new Boolean(data.running) : false;
+        this.running = data.running === 'true';
         
         console.log(`Parsed data: ${JSON.stringify(this.get_prepared_data())}`);
 
@@ -157,15 +157,15 @@ class WordleScheduler {
     get_prepared_data() {
         let data = {};
         
-        data['worlde_url'] = this.wordle_url = 'https://www.nytimes.com/games/wordle/index.html';
-        data['event_name'] = this.event_name = "Угадывай слово";
-        data['event_selector'] = this.event_selector = '#wordle'
-        data['start_hour'] = this.start_hour = 21;
-        data['start_min'] = this.start_min = 0;
-        data['event_duration_ms'] = this.event_duration_ms = (23 * 60 + 55) * 60 * 1000;
-        data['running'] = this.running = false;
-        data['_dump_retries'] = this._dump_retries = 0;
-        data['_restore_retries'] = this._restore_retries = 0;
+        data['worlde_url'] = this.wordle_url;
+        data['event_name'] = this.event_name;
+        data['event_selector'] = this.event_selector;
+        data['start_hour'] = this.start_hour;
+        data['start_min'] = this.start_min;
+        data['event_duration_ms'] = this.event_duration_ms;
+        data['running'] = this.running;
+        data['_dump_retries'] = this._dump_retries;
+        data['_restore_retries'] = this._restore_retries;
         data['next_start'] = this.next_start;
         data['next_end'] = this.next_end;
         

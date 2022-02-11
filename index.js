@@ -72,7 +72,7 @@ class BilderbergButler {
         if (interaction.commandName) {
             info = {
                 ...info,
-                command_name: interaction.command_name
+                command_name: interaction.commandName
             };
             if (interaction.options.getSubcommand()) {
                 info = {
