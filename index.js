@@ -16,7 +16,7 @@ class BilderbergButler {
         });
 
         this.client.on('interactionCreate', async interaction => {
-            console.log(`Received : ${JSON.stringofy(parse_message_info(interaction))}`);
+            console.log(`Received: ${JSON.stringify(parse_interaction_info(interaction))}`);
             
             if (!interaction.isCommand()) return;
             try {
