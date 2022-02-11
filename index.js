@@ -16,7 +16,7 @@ class BilderbergButler {
         });
 
         this.client.on('interactionCreate', async interaction => {
-            console.log(`Received : ${interaction}`);
+            console.log(`Received : ${JSON.stringofy(parse_message_info(interaction))}`);
             
             if (!interaction.isCommand()) return;
             try {
@@ -36,10 +36,59 @@ class BilderbergButler {
 
     async restore_data () {
         this.client.guilds.cache.map((guild) => {
-            console.log(`Found my self in ${guild.id}`);
+            console.log(`Found my self in ${guild.name}:${guild.id}`);
             console.log('Reviving database for ^^^')
             restore_wordle(guild, this);
         });
+    }
+    
+    parse_interaction_info (interaction) {
+        let info = {};
+        if (interaction.guild) {
+            info = {
+                ...info,
+                guild_name: interaction.guild.name,
+                guild_id: interaction.guild.id
+            };
+        }
+        
+        if (interaction.member) {
+            info = {
+                ...info,
+                member_name: interaction.member.displayName,
+                member_id: interaction.member.id
+            };
+        }
+        
+        if (interaction.user) {
+            info = {
+                ...info,
+                user_id: interaction.user.id,
+                user_name: interaction.user.username,
+                user_tag: interaction.user.tag
+            };
+        }
+        
+        if (interaction.commandName) {
+            info = {
+                ...info,
+                command_name: interaction.command_name
+            };
+            if (interaction.options.getSubcommand()) {
+                info = {
+                    ...info,
+                    subcommand_name: interaction.options.getSubcommand()
+                };
+            }
+        }
+        
+        let result = {};
+        
+        for (let key in info) {
+            if (info[key]) result[key] = info[key];
+        }
+        
+        return result;
     }
 }
 
