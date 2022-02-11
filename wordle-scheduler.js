@@ -130,7 +130,7 @@ class WordleScheduler {
         this.next_end = data.next_end ? new Number(data.next_end) : undefined;
         this.running = data.running ? new Boolean(data.running) : false;
         
-        console.log(`Parsed data: ${JSON.stringify(get_prepared_data())}`);
+        console.log(`Parsed data: ${JSON.stringify(this.get_prepared_data())}`);
 
         if (!this.running) {
             return;
