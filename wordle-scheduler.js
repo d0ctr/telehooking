@@ -1,6 +1,6 @@
 class WordleScheduler {
     constructor(app) {
-        this.wordle_url = 'https://www.powerlanguage.co.uk/wordle/';
+        this.wordle_url = 'https://www.nytimes.com/games/wordle/index.html';
         this.event_name = "Угадывай слово";
         this.event_selector = '#wordle'
         this.start_hour = 21;
