@@ -74,7 +74,7 @@ class BilderbergButler {
                 ...info,
                 command_name: interaction.commandName
             };
-            if (interaction.options.getSubcommand()) {
+            if (interaction.options.getSubcommand(false)) {
                 info = {
                     ...info,
                     subcommand_name: interaction.options.getSubcommand()
@@ -85,7 +85,7 @@ class BilderbergButler {
         let result = {};
         
         for (let key in info) {
-            if (info[key]) result[key] = info[key];
+            if (info[key] !== undefined) result[key] = info[key];
         }
         
         return result;
