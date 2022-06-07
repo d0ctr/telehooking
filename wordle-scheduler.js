@@ -5,7 +5,7 @@ class WordleScheduler {
         this.event_selector = '#wordle'
         this.start_hour = 21;
         this.start_min = 0;
-        this.event_duration_ms = (23 * 60 + 55) * 60 * 1000;
+        this.event_duration_ms = (23 * 60 + 45) * 60 * 1000;
         this.running = false;
         this.redis = app.redis ? app.redis : undefined;
         this._dump_retries = 0;
