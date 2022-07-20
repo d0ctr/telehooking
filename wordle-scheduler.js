@@ -1,5 +1,10 @@
+const { GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel } = require('discord.js');
+
 class WordleScheduler {
-    constructor(app) {
+    constructor(handler) {
+        this.handler = handler;
+        this.app = handler.app;
+        this.logger = handler.logger.child({module: 'wordle-scheduler'});
         this.wordle_url = 'https://www.nytimes.com/games/wordle/index.html';
         this.event_name = "Угадывай слово";
         this.event_selector = '#wordle'
@@ -7,7 +12,7 @@ class WordleScheduler {
         this.start_min = 0;
         this.event_duration_ms = (23 * 60 + 45) * 60 * 1000;
         this.running = false;
-        this.redis = app.redis ? app.redis : undefined;
+        this.redis = this.app.redis ? this.app.redis : undefined;
         this._dump_retries = 0;
         this._restore_retries = 0;
     }
@@ -21,13 +26,12 @@ class WordleScheduler {
     }
 
     stop() {
-        if(this._schedule_interval && this.running) {
-            clearInterval(this._schedule_interval);
+        if(this._schedule_timeout) {
+            clearInterval(this._schedule_timeout);
         }
-        if (this.running) {
-            this.running = false;
-            this.dump();
-        }
+
+        this.running = false;
+        this.dump();
     }
 
     async _start_scheduling() {
@@ -46,12 +50,12 @@ class WordleScheduler {
             name: this.event_name, 
             scheduledStartTime: this.next_start, 
             scheduledEndTime: this.next_end, 
-            privacyLevel: 'GUILD_ONLY',
-            entityType: 'EXTERNAL',
+            privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+            entityType: GuildScheduledEventEntityType.External,
             entityMetadata: { location: this.wordle_url }
         });
 
-        this._schedule_interval = setInterval(this._start_scheduling.bind(this), this.next_end - Date.now());
+        this._schedule_timeout = setTimeout(this._start_scheduling.bind(this), this.next_end - Date.now());
         
         this.running = true;
         
@@ -69,14 +73,14 @@ class WordleScheduler {
             next_end: this.next_end,
             running: this.running
         }).catch(err => {
-            console.error(`Error while dumping data for ${this._guild.id}:`, err);
+            this.logger.error(`Error while dumping data for ${this._guild.id}:wordle`, err);
             if (this._dump_retries < 15) {
-                console.log(`Retrying dumping data for ${this._guild.id}`);
-                setInterval(this.dump.bind(this), 15000);
+                this.logger.info(`Retrying dumping data for ${this._guild.id}:wordle`);
+                setTimeout(this.dump.bind(this), 15000);
                 this._dump_retries += 1;
             }
             else {
-                console.log(`Giving up on trying to dump data for ${this._guild.id}`);
+                this.logger.info(`Giving up on trying to dump data for ${this._guild.id}:wordle`);
                 this._dump_retries = 0;
             }
         }).then(res => {
@@ -91,7 +95,7 @@ class WordleScheduler {
             return;
         }
         if (!guild && !this._guild) {
-            console.error('No guild to restore data for');
+            this.logger.error('No guild to restore data for');
             return;
         }
         else if (!this._guild && guild) {
@@ -103,25 +107,25 @@ class WordleScheduler {
             data = await this.redis.hgetall(`${this._guild.id}:wordle`);
         }
         catch (err) {
-            console.error(`Error while restoring data for ${this._guild.id}:`, err);
+            this.logger.error(`Error while restoring data for ${this._guild.id}:wordle`, err);
             if (this._restore_retries < 15) {
-                console.log(`Retrying restoring data for ${this._guild.id}`);
-                setInterval(this.restore.bind(this), 15000);
+                this.logger.info(`Retrying restoring data for ${this._guild.id}:wordle`);
+                setTimeout(this.restore.bind(this), 15000);
                 this._restore_retries += 1;
             }
             else {
-                console.log(`Giving up on trying to restore data for ${this._guild.id}`);
+                this.logger.info(`Giving up on trying to restore data for ${this._guild.id}:wordle`);
                 this._restore_retries = 0;
             }
             return;
         }
 
         if (!data || !data.event_name) {
-            console.log(`Nothing to restore for ${this._guild.id}`);
+            this.logger.info(`Nothing to restore for ${this._guild.id}`);
             return;
         }
         else {
-            console.log(`Restored data for ${this._guild.id}: ${JSON.stringify(data)}`);
+            this.logger.info(`Restored data for ${this._guild.id}: ${JSON.stringify(data)}`);
         }
 
         this.event_name = data.event_name;
@@ -130,7 +134,7 @@ class WordleScheduler {
         this.next_end = data.next_end ? new Number(data.next_end) : undefined;
         this.running = data.running === 'true';
         
-        console.log(`Parsed data: ${JSON.stringify(this.get_prepared_data())}`);
+        this.logger.info(`Parsed data: ${JSON.stringify(this.get_prepared_data())}`);
 
         if (!this.running) {
             return;
@@ -141,7 +145,7 @@ class WordleScheduler {
             return;
         }
         else {
-            this._schedule_interval = setInterval(this._start_scheduling.bind(this), this.next_end - Date.now());
+            this._schedule_timeout = setTimeout(this._start_scheduling.bind(this), this.next_end - Date.now());
         }
     }
 
@@ -150,7 +154,7 @@ class WordleScheduler {
             return;
         }
         this.redis.hdel(`${this._guild.id}:wordle`, ['event_name', 'event_selector', 'next_start', 'next_end', 'running']).catch((err) => {
-            console.error(`Error while deleting dump for ${this._guild.id}:`, err);
+            this.logger.error(`Error while deleting dump for ${this._guild.id}:`, err);
         });
     }
     

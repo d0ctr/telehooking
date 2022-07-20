@@ -1,0 +1,156 @@
+const { Client, GatewayIntentBits } = require('discord.js');
+const Handler = require('./discord-handler');
+const WordleScheduler = require('./wordle-scheduler');
+const ChannelSubscriber = require('./channel-subscriber');
+
+class DiscordClient {
+    constructor(app) {
+        this.app = app;
+        this.logger = app.logger.child({module: 'discord-client'});
+        this.redis = app.redis;
+        this.handler = new Handler(this);
+        this.client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
+        this.guild_to_wordle = {};
+        this.channel_to_subscriber = {};
+
+
+        this.client.once('ready', () => {
+            this.logger.info('Discord Client is ready.');
+            this.restore_data();
+        });
+
+        this.client.on('interactionCreate', async interaction => {
+            this.logger.info(`Discord client received: ${JSON.stringify(this.parse_interaction_info(interaction))}`);
+            
+            if (!interaction.isChatInputCommand()) return;
+            try {
+                await this.handler.handle_command(interaction);
+            }
+            catch (err) {
+                this.logger.error('Error while processing discord command: ', err);
+                await interaction.editReply('Opps! Something broke on my side.');
+            }
+        });
+
+        this.client.on('voiceStateUpdate', async (prev_state, new_state) => {
+            this.logger.info(`Discord client received: ${JSON.stringify(new_state)}`);
+            if (Object.keys(this.channel_to_subscriber).includes(prev_state.channelId || new_state.channelId)) {
+                this.channel_to_subscriber[prev_state.channelId || new_state.channelId].notify(prev_state, new_state);
+            }
+        });
+    }
+
+    async start() {
+        this.client.login(process.env.DISCORD_TOKEN);
+    }
+
+    async restore_wordle(guild) {
+        if (this.guild_to_wordle[guild.id]) {
+            this.logger.info(`There is an active Wordle instance for ${guild.id}, no need for restoration`);
+            return;
+        }
+        if (!this.redis) {
+            this.logger.info("Hey! I can't revive without redis instance!");
+            return;
+        }
+    
+        this.guild_to_wordle[guild.id] = new WordleScheduler(this);
+        this.guild_to_wordle[guild.id].restore(guild);
+    }
+
+    async restore_channel_subscriber(guild, channel_id) {
+        if (!guild && !channel_id) {
+            this.logger.info(`Not enough input to restore data.`)
+        }
+        if (this.channel_to_subscriber[channel_id]) {
+            this.logger.info(`There is an active channel subscriber for ${channel_id}, no need for restoration`);
+            return;
+        }
+        if (!this.redis) {
+            this.logger.info("Hey! I can't revive without redis instance!");
+            return;
+        }
+        this.channel_to_subscriber[channel_id] = new ChannelSubscriber(this);
+        this.channel_to_subscriber[channel_id].restore(guild, channel_id);
+    }
+
+    async restore_channel_ids(guild) {
+        if (!this.redis) {
+            this.logger.info("Hey! I can't revive without redis instance!");
+            return;
+        }
+
+        let channel_ids = await this.redis.keys(`${guild.id}:channel_subscriber:*`).catch(err => {
+            this.logger.error(`Error while getting channel ids for ${guild.id}:channel_subscriber`, err);
+            setTimeout(this.restore_channel_subscriber.bind(this), 15000, guild)
+        });
+
+        for (let i in channel_ids) {
+            channel_ids[i] = channel_ids[i].split(':')[2];
+        }
+
+        for (let channel_id of channel_ids) {
+            this.restore_channel_subscriber(guild, channel_id);
+        }
+    }
+
+    async restore_data () {
+        this.client.guilds.cache.map((guild) => {
+            this.logger.info(`Found myself in ${guild.name}:${guild.id}`);
+            this.logger.info('Reviving database for ^^^')
+            this.restore_wordle(guild);
+            this.restore_channel_ids(guild);
+        });
+    }
+    
+    parse_interaction_info (interaction) {
+        let info = {};
+        if (interaction.guild) {
+            info = {
+                ...info,
+                guild_name: interaction.guild.name,
+                guild_id: interaction.guild.id
+            };
+        }
+        
+        if (interaction.member) {
+            info = {
+                ...info,
+                member_name: interaction.member.displayName,
+                member_id: interaction.member.id
+            };
+        }
+        
+        if (interaction.user) {
+            info = {
+                ...info,
+                user_id: interaction.user.id,
+                user_name: interaction.user.username,
+                user_tag: interaction.user.tag
+            };
+        }
+        
+        if (interaction.commandName) {
+            info = {
+                ...info,
+                command_name: interaction.commandName
+            };
+            if (interaction.options.getSubcommand(false)) {
+                info = {
+                    ...info,
+                    subcommand_name: interaction.options.getSubcommand()
+                };
+            }
+        }
+        
+        let result = {};
+        
+        for (let key in info) {
+            if (info[key] !== undefined) result[key] = info[key];
+        }
+        
+        return result;
+    }
+}
+
+module.exports = DiscordClient;

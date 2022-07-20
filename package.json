@@ -4,7 +4,8 @@
   "description": "Discord bot for bilderberg club",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
   },
   "repository": {
     "type": "git",
@@ -17,12 +18,13 @@
   },
   "homepage": "https://github.com/d0ctr/bilderberg_butler#readme",
   "dependencies": {
-    "@discordjs/builders": "^0.11.0",
     "@discordjs/rest": "^0.2.0-canary.0",
-    "discord-api-types": "^0.26.1",
-    "discord.js": "^13.6.0",
+    "discord-api-types": "^0.36.2",
+    "discord.js": "^14.0.3",
     "dotenv": "^12.0.3",
-    "ioredis": "^4.28.3"
+    "ioredis": "^4.28.3",
+    "telegraf": "^4.8.5",
+    "winston": "^3.8.1"
   },
   "devDependencies": {
     "eslint": "^8.6.0"
