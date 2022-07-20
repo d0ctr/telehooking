@@ -6,7 +6,7 @@ class TelegramClient {
         this.logger = app.logger.child({module: 'telegram-client'});
         this.client = new Telegraf(process.env.TELEGRAM_TOKEN);
         this.client.start((ctx) => {
-            let message = `Отлично, можно начать работать.
+            let message = `Отлично, можно начать работать
 Теперь подпишись на канал в дискорде, указав id этого чата в команде: __\\${ctx.chat.id}__`;
             this.logger.info(`Sending message [${message}]`);
             ctx.reply(message, {parse_mode: 'MarkdownV2' });
