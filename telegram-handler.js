@@ -24,7 +24,7 @@ class TelegramHandler {
         }
         let result = null;
         try { 
-            result = mathjs.evaluate(math_line);
+            result = mathjs.evaluate(math_line).toString();
         }
         catch (err) {
             this.logger.error('Error while calculating:', err)
