@@ -95,7 +95,7 @@ class TelegramClient {
         this.cooldown_map = {};
         this.cooldown_duration = 5 * 1000;
 
-        this.client.start(async (ctx) =>  new TelegramInteraction(this, 'start').respond(ctx));
+        this.client.start(async (ctx) => new TelegramInteraction(this, 'start').respond(ctx));
         this.client.help(async (ctx) => new TelegramInteraction(this, 'help').respond(ctx));
         this.client.command('calc', async (ctx) => new TelegramInteraction(this, 'calc').respond(ctx));
         this.client.command('discord_notification', async (ctx) => new TelegramInteraction(this, 'discord_notification').respond(ctx));

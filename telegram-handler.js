@@ -1,4 +1,4 @@
-const mathjs = require('mathjs')
+const mathjs = require('mathjs');
 
 class TelegramHandler { 
     constructor(client) {
@@ -8,7 +8,7 @@ class TelegramHandler {
 
     _reply(context, text) {
         this.logger.info(`Replying with [${text}]`);
-        context.reply(text);
+        context.reply(text, {reply_to_message_id: context.message.message_id});
     }
 
     start(context) {
