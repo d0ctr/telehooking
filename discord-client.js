@@ -33,9 +33,11 @@ class DiscordClient {
         });
 
         this.client.on('voiceStateUpdate', async (prev_state, new_state) => {
-            this.logger.info(`Discord client received: ${JSON.stringify(new_state)}`);
-            if (Object.keys(this.channel_to_subscriber).includes(prev_state.channelId || new_state.channelId)) {
-                this.channel_to_subscriber[prev_state.channelId || new_state.channelId].notify(prev_state, new_state);
+            if (this.channel_to_subscriber[prev_state.channelId]) {
+                this.channel_to_subscriber[prev_state.channelId].notify(prev_state, new_state, prev_state);
+            }
+            else if(this.channel_to_subscriber[new_state.channelId]) {
+                this.channel_to_subscriber[new_state.channelId].notify(prev_state, new_state, new_state);
             }
         });
     }

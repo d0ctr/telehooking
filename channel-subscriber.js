@@ -10,40 +10,82 @@ class ChannelSubscriber {
         this._restore_retries = 0;
     }
     
-    notify(prev_state, new_state) {
+    notify(prev_state, new_state, watched_state) {
         if (!this.active) {
             return;
         }
 
         prev_state = this._parse_state(prev_state);
         new_state = this._parse_state(new_state);
+        watched_state = this._parse_state(watched_state);
+        this.logger.info(`Discord received updated state: ${JSON.stringify(watched_state)}`);
 
         let diff = {};
 
         // alone and muted
         if (prev_state.other_members && Object.keys(prev_state.other_members).length === 1
             && new_state.channel_id === undefined
-            && Object.values(prev_state.other_members)[0].muted) {
+            && Object.values(prev_state.other_members)[0].muted
+            && watched_state.channel_id === prev_state.channel_id) {
 
-            diff.foreveralone = {...Object.values(prev_state.other_members)[0]}
+            diff.type = 'foreveralone'
+            diff = {
+                ...diff,
+                ...Object.values(prev_state.other_members)[0]
+            }
         }
-        // new stream started but not everybody here
-        if (new_state.other_members && Object.keys(new_state.other_members).length === 0
-            && (prev_state.streaming !== new_state.streaming)
-            && new_state.streaming) {
+        // first join
+        if ((!prev_state.channel_id || new_state.channel_id !== prev_state.channel_id)
+            && new_state.other_members && Object.keys(new_state.other_members).length === 0
+            && new_state.channel_id === watched_state.channel_id) {
 
-            diff.new_stream = {
+            diff.type = 'first_join';
+            diff = {
+                ...diff,
                 user_id: new_state.user_id,
                 user_name: new_state.user_name,
                 streaming: new_state.streaming,
                 member_id: new_state.member_id
             }
         }
-        // first join
-        if (prev_state.channel_id == undefined
-            && new_state.other_members && Object.keys(new_state.other_members).length === 0) {
+        // -first join
+        if (prev_state.other_members && Object.keys(prev_state.other_members).length === 0
+            && (!new_state.channel_id || new_state.channel_id !== prev_state.channel_id)
+            && watched_state.channel_id === prev_state.channel_id) {
 
-            diff.first_join = {
+            diff.type= '-first_join';
+            diff = {
+                ...diff,
+                user_id: prev_state.user_id,
+                user_name: prev_state.user_name,
+                streaming: prev_state.streaming,
+                member_id: prev_state.member_id
+            }
+        }
+        // new stream started but not everybody here
+        if (new_state.other_members && Object.keys(new_state.other_members).length === 0
+            && (prev_state.streaming !== new_state.streaming)
+            && new_state.streaming
+            && watched_state.channel_id === new_state.channel_id) {
+
+            diff.type = 'new_stream';
+            diff = {
+                ...diff,
+                user_id: new_state.user_id,
+                user_name: new_state.user_name,
+                streaming: new_state.streaming,
+                member_id: new_state.member_id
+            }
+        }
+        // -new stream
+        if (new_state.other_members && Object.keys(new_state.other_members).length === 0
+            && (prev_state.streaming !== new_state.streaming)
+            && prev_state.streaming
+            && watched_state.channel_id === prev_state.channel_id) {
+
+            diff.type = '-new_stream';
+            diff = {
+                ...diff,
                 user_id: new_state.user_id,
                 user_name: new_state.user_name,
                 streaming: new_state.streaming,
@@ -52,11 +94,12 @@ class ChannelSubscriber {
         }
 
         if (Object.keys(diff).length) {
-            diff.channel_info = {
-                channel_id: new_state.channel_id,
-                channel_name: new_state.channel_name,
-                channel_url: new_state.channel_url,
-                channel_type: new_state.channel_type
+            diff = {
+                ...diff,
+                channel_id: watched_state.channel_id,
+                channel_name: watched_state.channel_name,
+                channel_url: watched_state.channel_url,
+                channel_type: watched_state.channel_type
             }
         }
         else {
@@ -65,7 +108,7 @@ class ChannelSubscriber {
         this.logger.info(`Catched diff: ${JSON.stringify(diff)}`);
         if (diff && this.telegram_chat_id) {
             try{
-                this.app.telegram_client.sendNotification(diff, this.telegram_chat_id);
+                this.app.telegram_client.send_notification(diff, this.telegram_chat_id);
             }
             catch (e) {
                 this.logger.error(`Couldn't send notification for ${this._guild.name}:${this._channel.name}:`)
