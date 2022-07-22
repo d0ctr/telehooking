@@ -1,15 +1,18 @@
 const dotenv = require('dotenv');
 const Redis = require('ioredis');
-const DiscordClient = require('./discord-client');
-const TelegramClient = require('./telegram-client');
+const DiscordClient = require('./discord');
+const TelegramClient = require('./telegram');
 const { createLogger, format, transports } = require('winston');
 
 dotenv.config();
 
 const logger = createLogger({
-    format: format.printf(options => {
-        return `${options.timestamp} - ${options.module} - ${options.level} - ${options.message.replace(/\n/gm, '\\n')}`;
-    }),
+    format: format.combine(
+        format.timestamp(),
+        format.printf(options => {
+            return `${options.timestamp} - ${options.module} - ${options.level} - ${options.message.replace(/\n/gm, '\\n')}`;
+        })
+    ),
     transports: [new transports.Console()]
 });
 
