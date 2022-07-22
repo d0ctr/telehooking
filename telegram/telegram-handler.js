@@ -58,7 +58,7 @@ class TelegramHandler {
         media_type = media_type.join('');
 
         if (typeof context['replyWith' + media_type] === 'function') {
-            this.logger.info(`Replying with [${message_options.caption ? `${message_options.caption} ` : ''} ${media_type}:${media}]`);
+            this.logger.info(`Replying with [${message_options.caption ? `${message_options.caption} ` : ' '}${media_type}:${media}]`);
             context['replyWith' + media_type](media, message_options);
             return;
         }
