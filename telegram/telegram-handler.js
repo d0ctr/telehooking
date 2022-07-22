@@ -1,6 +1,7 @@
 const TeleTypes = require('telegraf/types');
 const TelegrafTypes = require('telegraf');
 const mathjs = require('mathjs');
+const get_regex = /^[a-zA-Zа-яА-Я0-9_-]+$/g;
 
 class TelegramHandler { 
     constructor(client) {
@@ -137,7 +138,7 @@ class TelegramHandler {
      */
     async get(context, interaction) {
         let name = this._parse_args(context, 1)[1];
-        if (!name.match(/^[a-zA-Zа-яА-Я0-9]+$/g)) {
+        if (!name.match(get_regex)) {
             this._reply(context, 'Название гета может состоять только из букв латинского, русского алфавитов и цифр');
             return;
         }
@@ -163,7 +164,7 @@ class TelegramHandler {
      */
     async set(context, interaction) {
         let name = this._parse_args(context, 1)[1];
-        if (!name.match(/^[a-zA-Zа-яА-Я0-9]+$/g)) {
+        if (!name.match(get_regex)) {
             this._reply(context, 'Название гета может состоять только из букв латинского, русского алфавитов и цифр');
             return;
         }
