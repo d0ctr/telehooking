@@ -83,7 +83,7 @@ class DiscordClient {
         }
 
         let channel_ids = await this.redis.keys(`${guild.id}:channel_subscriber:*`).catch(err => {
-            this.logger.error(`Error while getting channel ids for ${guild.id}:channel_subscriber`, err);
+            this.logger.error(`Error while getting channel ids for ${guild.id}:channel_subscriber: ${err.stack}`);
             setTimeout(this.restore_channel_subscriber.bind(this), 15000, guild)
         });
 

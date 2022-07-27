@@ -173,7 +173,7 @@ class ChannelSubscriber {
             active: this.active,
             telegram_chat_id: this.telegram_chat_id
         }).catch(err => {
-            this.logger.error(`Error while dumping data for ${this._guild.id}:channel_subscriber`, err);
+            this.logger.error(`Error while dumping data for ${this._guild.id}:channel_subscriber: ${err.stack}`);
             if (this._dump_retries < 15) {
                 this.logger.info(`Retrying dumping data for ${this._guild.id}:channel_subscriber`);
                 setTimeout(this.dump.bind(this), 15000);
@@ -208,7 +208,7 @@ class ChannelSubscriber {
             data = await this.redis.hgetall(`${this._guild.id}:channel_subscriber:${this._channel.id}`);
         }
         catch (err) {
-            this.logger.error(`Error while restoring data for ${this._guild.id}:channel_subscriber:${this._channel.id}`, err);
+            this.logger.error(`Error while restoring data for ${this._guild.id}:channel_subscriber:${this._channel.id}: ${err.stack}`);
             if (this._restore_retries < 15) {
                 this.logger.info(`Retrying restoring data for ${this._guild.id}:channel_subscriber:${this._channel.id}`);
                 setTimeout(this.restore.bind(this), 15000);
@@ -240,7 +240,7 @@ class ChannelSubscriber {
             return;
         }
         this.redis.del(`${this._guild.id}:channel_subscriber:${this._channel.id}`).catch((err) => {
-            this.logger.error(`Error while deleting dump for ${this._guild.id}:`, err);
+            this.logger.error(`Error while deleting dump for ${this._guild.id}: ${err.stack}`);
         });
     }
 }

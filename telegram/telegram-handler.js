@@ -138,6 +138,10 @@ class TelegramHandler {
      */
     async get(context, interaction) {
         let name = this._parse_args(context, 1)[1];
+        if (!name) {
+            this._reply(context, 'Ты забыл указать название гета');
+            return;
+        }
         if (!name.match(get_regex)) {
             this._reply(context, 'Название гета может состоять только из букв латинского, русского алфавитов и цифр');
             return;
@@ -147,7 +151,7 @@ class TelegramHandler {
             result = await interaction.redis_get(name);
         }
         catch (err) {
-            this.logger.error(`Error while saving content to redis: ${err}`);
+            this.logger.error(`Error while saving content to redis: ${err.stack}`);
             this._reply(context, `Что-то случилось во время получения гета:\n<code>${err}</code>`);
             return;
         }
@@ -164,6 +168,10 @@ class TelegramHandler {
      */
     async set(context, interaction) {
         let name = this._parse_args(context, 1)[1];
+        if (!name) {
+            this._reply(context, 'Ты забыл указать название гета');
+            return;
+        }
         if (!name.match(get_regex)) {
             this._reply(context, 'Название гета может состоять только из букв латинского, русского алфавитов и цифр');
             return;
@@ -245,7 +253,7 @@ class TelegramHandler {
             await interaction.redis_set(name, parsed_data);
         }
         catch (err) {
-            this.logger.error(`Error while saving content to redis: ${err}`);
+            this.logger.error(`Error while saving content to redis: ${err.stack}`);
             this._reply(context, `Что-то случилось во время сохранения гета:\n<code>${err}</code>`);
             return;
         }

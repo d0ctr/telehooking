@@ -12,7 +12,7 @@
     "url": "git+https://github.com/d0ctr/bilderberg_butler.git"
   },
   "author": "@d0ctr (Danila Vasilev)",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/d0ctr/bilderberg_butler/issues"
   },
@@ -31,6 +31,6 @@
     "eslint": "^8.6.0"
   },
   "engines": {
-    "node": ">=17.0.0"
+    "node": ">=16.0.0"
   }
 }

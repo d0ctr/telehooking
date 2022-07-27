@@ -73,7 +73,7 @@ class WordleScheduler {
             next_end: this.next_end,
             running: this.running
         }).catch(err => {
-            this.logger.error(`Error while dumping data for ${this._guild.id}:wordle`, err);
+            this.logger.error(`Error while dumping data for ${this._guild.id}:wordle: ${err.stack}`);
             if (this._dump_retries < 15) {
                 this.logger.info(`Retrying dumping data for ${this._guild.id}:wordle`);
                 setTimeout(this.dump.bind(this), 15000);
@@ -107,7 +107,7 @@ class WordleScheduler {
             data = await this.redis.hgetall(`${this._guild.id}:wordle`);
         }
         catch (err) {
-            this.logger.error(`Error while restoring data for ${this._guild.id}:wordle`, err);
+            this.logger.error(`Error while restoring data for ${this._guild.id}:wordle: ${err.stack}`);
             if (this._restore_retries < 15) {
                 this.logger.info(`Retrying restoring data for ${this._guild.id}:wordle`);
                 setTimeout(this.restore.bind(this), 15000);
@@ -154,7 +154,7 @@ class WordleScheduler {
             return;
         }
         this.redis.hdel(`${this._guild.id}:wordle`, ['event_name', 'event_selector', 'next_start', 'next_end', 'running']).catch((err) => {
-            this.logger.error(`Error while deleting dump for ${this._guild.id}:`, err);
+            this.logger.error(`Error while deleting dump for ${this._guild.id}: ${err.stack}`);
         });
     }
     

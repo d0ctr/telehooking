@@ -91,13 +91,13 @@ class TelegramInteraction {
         }
     }
 
-    respond() {
+    async respond() {
         this.logger.info(`Received command: ${this.context.message.text}`);
         try {
-            this.handler[this.command_name](this.context, this);
+            await this.handler[this.command_name](this.context, this);
         }
         catch (err) {
-            this.logger.error(`Error while processing command: ${err}`);
+            this.logger.error(`Error while processing command: ${err.stack}`);
             this.context.replyWithHTML(`Что-то случилось:\n<code>${err}</code>`);
         }
     }
