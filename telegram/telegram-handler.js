@@ -32,7 +32,7 @@ class TelegramHandler {
      */
     _reply(context, text) {
         this.logger.info(`Replying with [${text}]`);
-        context.replyWithHTML(text, {reply_to_message_id: context.message.message_id});
+        context.replyWithHTML(text, { reply_to_message_id: context.message.message_id, disable_web_page_preview: true });
     }
 
     /**
@@ -48,7 +48,8 @@ class TelegramHandler {
         let message_options = {
             reply_to_message_id: context.message.message_id,
             caption: message.text,
-            parse_mode: 'HTML'
+            parse_mode: 'HTML',
+            disable_web_page_preview: true
         };
 
         let media = message[message.type];

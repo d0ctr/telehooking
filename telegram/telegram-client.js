@@ -52,7 +52,7 @@ class TelegramInteraction {
 
         if (!message) return;
         this.logger.info(`Sending message [${message}]`);
-        this.sent_message = await this.telegram.sendMessage(this.chat_id, message, {parse_mode: 'HTML'});
+        this.sent_message = await this.telegram.sendMessage(this.chat_id, message, { parse_mode: 'HTML', disable_web_page_preview: true });
         this._cooldown();
     }
 
