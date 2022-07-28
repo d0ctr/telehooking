@@ -8,23 +8,27 @@ dotenv.config();
 const commands = [
 	new SlashCommandBuilder() // ping
         .setName('ping')
+        .setDMPermission(true)
         .setDescription('Replies with pong!'),
 
 	new SlashCommandBuilder() // server
         .setName('server')
+        .setDMPermission(false)
         .setDescription('Replies with server info!'),
 
 	new SlashCommandBuilder() // user
         .setName('user')
+        .setDMPermission(true)
         .setDescription('Replies with user info!'),
     
     new SlashCommandBuilder() // subscribe
         .setName('subscribe')
+        .setDMPermission(false)
         .setDescription("Subscribe for events in server's voice channel")
         .addChannelOption(input => 
             input.setName('channel')
                 .setDescription('Voice Channel to subscribe to')
-                .addChannelType(ChannelType.GuildVoice)
+                .addChannelTypes(ChannelType.GuildVoice)
                 .setRequired(true))
         .addStringOption(input => 
             input.setName('telegram_chat_id')
@@ -33,15 +37,17 @@ const commands = [
     
     new SlashCommandBuilder() // unsubscribe
         .setName('unsubscribe')
+        .setDMPermission(false)
         .setDescription("Unsubscribe from events in server's voice channel")
         .addChannelOption(input => 
             input.setName('channel')
                 .setDescription('Voice Channel to unsubscribe from')
-                .addChannelType(ChannelType.GuildVoice)
+                .addChannelTypes(ChannelType.GuildVoice)
                 .setRequired(true)),
 
     new SlashCommandBuilder() // wordle
         .setName('wordle')
+        .setDMPermission(false)
         .setDescription('Wordle scheduler')
         .addSubcommand(subcommand =>
             subcommand
