@@ -103,11 +103,17 @@ class TelegramInteraction {
     }
 
     async redis_get(name) {
+        if (!this._redis) {
+            throw new Error('Нет подключения к хранилищу гетов');
+        }
         let key = `${this.context.chat.id}:get:${name}`;
         return await this._redis.hgetall(key);
     }
 
     async redis_set(name, data) {
+        if (!this._redis) {
+            throw new Error('Нет подключения к хранилищу гетов');
+        }
         let key = `${this.context.chat.id}:get:${name}`;
         for (let i in data) {
             if (!data[i]) {
@@ -121,6 +127,9 @@ class TelegramInteraction {
     }
 
     async redis_get_list() {
+        if (!this._redis) {
+            throw new Error('Нет подключения к хранилищу гетов');
+        }
         let key = `${this.context.chat.id}:get:*`;
         let r_keys = await this._redis.keys(key);
         let keys = [];
@@ -140,7 +149,7 @@ class TelegramClient {
         this.app = app;
         this.redis = app.redis ? app.redis : null;
         this.logger = app.logger.child({module: 'telegram-client'});
-        this.client = new Telegraf(process.env.TELEGRAM_TOKEN);
+        this.client = process.env.TELEGRAM_TOKEN && new Telegraf(process.env.TELEGRAM_TOKEN);
         this.handler = new TelegramHandler(this);
         this.cooldown_map = {};
         this.cooldown_duration = 5 * 1000;
@@ -156,12 +165,21 @@ class TelegramClient {
     }
 
     start() {
+        if (!this.client) {
+            this.logger.warn(`Token for Telegram wasn't specified, client is not started.`);
+            return;
+        }
         this.client.launch();
     }
 
     async send_notification(notification_data, chat_id) {
-        if (!notification_data || !chat_id) return;
-        new TelegramInteraction(this).send_notification(notification_data, chat_id);
+        if (!notification_data || !chat_id || !this.client) return;
+        for (let diff of notification_data['+']) {
+            new TelegramInteraction(this).send_notification({ ...diff, ...notification_data.channel }, chat_id);
+        }
+        for (let diff of notification_data['-']) {
+            new TelegramInteraction(this).send_notification({ ...diff, ...notification_data.channel }, chat_id);
+        }
     }
 }
 

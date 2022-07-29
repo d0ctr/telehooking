@@ -20,47 +20,74 @@ class ChannelSubscriber {
         watched_state = this._parse_state(watched_state);
         this.logger.info(`Discord received updated state: ${JSON.stringify(watched_state)}`);
 
-        let diff = {};
+        let diff = {
+            '+': [],
+            '-': []
+        };
 
-        // alone and muted
+        // foreveralone
         if (prev_state.other_members && Object.keys(prev_state.other_members).length === 1
             && new_state.channel_id === undefined
             && Object.values(prev_state.other_members)[0].muted
             && watched_state.channel_id === prev_state.channel_id) {
 
-            diff.type = 'foreveralone'
-            diff = {
-                ...diff,
+            diff['+'].push({ 
+                type: 'foreveralone',
                 ...Object.values(prev_state.other_members)[0]
-            }
+            });
+        }
+        // -foreveralone
+        if (prev_state.other_members && Object.keys(prev_state.other_members).length === 0
+            && new_state.channel_id === undefined
+            && prev_state.muted
+            && watched_state.channel_id === prev_state.channel_id) {
+
+            diff['-'].push({
+                type: '-foreveralone',
+                user_id: prev_state.user_id,
+                user_name: prev_state.user_name,
+                streaming: false,
+                member_id: prev_state.member_id,
+                muted: false
+            });
         }
         // first join
         if ((!prev_state.channel_id || new_state.channel_id !== prev_state.channel_id)
             && new_state.other_members && Object.keys(new_state.other_members).length === 0
             && new_state.channel_id === watched_state.channel_id) {
 
-            diff.type = 'first_join';
-            diff = {
-                ...diff,
+            diff['+'].push({
+                type: 'first_join',
                 user_id: new_state.user_id,
                 user_name: new_state.user_name,
                 streaming: new_state.streaming,
-                member_id: new_state.member_id
-            }
+                member_id: new_state.member_id,
+                muted: new_state.muted
+            });
         }
         // -first join
         if (prev_state.other_members && Object.keys(prev_state.other_members).length === 0
             && (!new_state.channel_id || new_state.channel_id !== prev_state.channel_id)
             && watched_state.channel_id === prev_state.channel_id) {
 
-            diff.type= '-first_join';
-            diff = {
-                ...diff,
+            let i = diff['-'].push({
+                type: '-first_join',
                 user_id: prev_state.user_id,
                 user_name: prev_state.user_name,
-                streaming: prev_state.streaming,
-                member_id: prev_state.member_id
-            }
+                streaming: false,
+                member_id: prev_state.member_id,
+                muted: false
+            });
+            // here goes some sketchy shpt
+            // this needs fix (probably rework of the current state diff)
+            diff['-'].push({
+                ...diff['-'][i - 1],
+                type: '-new_stream'
+            })
+            diff['-'].push({
+                ...diff['-'][i - 1],
+                type: '-foreveralone'
+            })
         }
         // new stream started but not everybody here
         if (new_state.other_members && Object.keys(new_state.other_members).length === 0
@@ -68,34 +95,33 @@ class ChannelSubscriber {
             && new_state.streaming
             && watched_state.channel_id === new_state.channel_id) {
 
-            diff.type = 'new_stream';
-            diff = {
-                ...diff,
+            diff['+'].push({
+                type: 'new_stream',
                 user_id: new_state.user_id,
                 user_name: new_state.user_name,
                 streaming: new_state.streaming,
-                member_id: new_state.member_id
-            }
+                member_id: new_state.member_id,
+                muted: new_state.muted
+            });
         }
         // -new stream
-        if (new_state.other_members && Object.keys(new_state.other_members).length === 0
-            && (prev_state.streaming !== new_state.streaming)
+        if (prev_state.other_members && Object.keys(prev_state.other_members).length === 0
+            && (!new_state.streaming || prev_state.streaming !== new_state.streaming)
             && prev_state.streaming
             && watched_state.channel_id === prev_state.channel_id) {
 
-            diff.type = '-new_stream';
-            diff = {
-                ...diff,
+            diff['-'].push({
+                type: '-new_stream',
                 user_id: new_state.user_id,
                 user_name: new_state.user_name,
-                streaming: new_state.streaming,
-                member_id: new_state.member_id
-            }
+                streaming: false,
+                member_id: prev_state.member_id,
+                muted: new_state.muted || false
+            });
         }
 
         if (Object.keys(diff).length) {
-            diff = {
-                ...diff,
+            diff['channel'] = {
                 channel_id: watched_state.channel_id,
                 channel_name: watched_state.channel_name,
                 channel_url: watched_state.channel_url,
@@ -121,8 +147,9 @@ class ChannelSubscriber {
         let parsed_state = {};
         parsed_state.user_id = state.member.user.id;
         parsed_state.user_name = state.member.user.username;
-        parsed_state.streaming= state.streaming;
+        parsed_state.streaming = state.streaming;
         parsed_state.member_id = state.member.id;
+        parsed_state.muted = state.mute
 
         if (state.channel) {
             parsed_state.channel_id = state.channel.id;

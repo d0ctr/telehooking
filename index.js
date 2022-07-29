@@ -19,7 +19,7 @@ const logger = createLogger({
 function main() {
     let app = {};
     app.logger = logger.child({module: 'index'});
-    app.redis = new Redis(process.env.REDISCLOUD_URL);
+    app.redis = process.env.REDISCLOUD_URL && new Redis(process.env.REDISCLOUD_URL);
     app.discord_client = new DiscordClient(app);
     app.telegram_client = new TelegramClient(app);
     app.logger.info('Starting Discord Client');

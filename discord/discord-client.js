@@ -33,16 +33,20 @@ class DiscordClient {
         });
 
         this.client.on('voiceStateUpdate', async (prev_state, new_state) => {
-            if (this.channel_to_subscriber[prev_state.channelId]) {
-                this.channel_to_subscriber[prev_state.channelId].notify(prev_state, new_state, prev_state);
-            }
-            else if(this.channel_to_subscriber[new_state.channelId]) {
+            if(this.channel_to_subscriber[new_state.channelId]) {
                 this.channel_to_subscriber[new_state.channelId].notify(prev_state, new_state, new_state);
+            }
+            else if (this.channel_to_subscriber[prev_state.channelId]) {
+                this.channel_to_subscriber[prev_state.channelId].notify(prev_state, new_state, prev_state);
             }
         });
     }
 
     async start() {
+        if (!process.env.DISCORD_TOKEN) {
+            this.logger.warn(`Token for Discord wasn't specified, client is nott started.`);
+            return;
+        }
         this.client.login(process.env.DISCORD_TOKEN);
     }
 
