@@ -1,1 +1,1 @@
-../deploy-commands.js
+../../deploy-commands.js

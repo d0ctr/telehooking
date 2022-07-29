@@ -1,11 +1,18 @@
-<img src="https://github.com/d0ctr/bilderberg-butler/raw/main/docs/bilderberg_club_10p.png" width=800% height=800%></a>
-<a href="/LICENSE.md" ><img src="https://img.shields.io/github/license/d0ctr/bilderberg-butler" alt="License" /></a>
-<img src="https://img.shields.io/github/package-json/v/d0ctr/bilderberg-butler">
-<a href="https://libraries.io/github/d0ctr/bilderberg-butler"><img src="https://img.shields.io/librariesio/github/d0ctr/bilderberg-butler"></a>
-<a href="https://www.npmjs.com/package/discord.js/v/14.0.3"><img src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/discord.js"></a>
-<a href="https://www.npmjs.com/package/telegraf/v/4.8.5"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/telegraf"></a>
-<a href="https://www.npmjs.com/package/ioredis/v/4.28.3"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/ioredis"></a>
-<img src="https://heroku-shields.herokuapp.com/bilderberg-butler"></a>
+<div align="center">
+    <p style="text-align:center;">
+    <a><img src="https://github.com/d0ctr/bilderberg-butler/raw/main/docs/bilderberg_club_10p.png" width="50%" height="50%" /></a>
+    </p>
+    <br />
+    <p>
+    <a href="/LICENSE.md" ><img src="https://img.shields.io/github/license/d0ctr/bilderberg-butler" alt="License" /></a>
+    <a><img src="https://img.shields.io/github/package-json/v/d0ctr/bilderberg-butler" /></a>
+    <a href="https://libraries.io/github/d0ctr/bilderberg-butler"><img src="https://img.shields.io/librariesio/github/d0ctr/bilderberg-butler" /></a>
+    <a href="https://www.npmjs.com/package/discord.js/v/14.0.3"><img src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/discord.js" /></a>
+    <a href="https://www.npmjs.com/package/telegraf/v/4.8.5"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/telegraf" /></a>
+    <a href="https://www.npmjs.com/package/ioredis/v/4.28.3"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/ioredis" /></a>
+    <a><img src="https://heroku-shields.herokuapp.com/bilderberg-butler" /></a>
+    </p>
+</div>
 
 # Bilderberg Butler
 
