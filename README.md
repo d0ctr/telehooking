@@ -9,7 +9,7 @@
 
 # Bilderberg Butler
 
-This is an application that runs tow bots simultaniously: one for Discord and one for Telegram.
+This is an application that runs two bots simultaniously: one for Discord and one for Telegram.
 
 - [Functionality](#functionality)
   * [Discord Bot](#discord-bot)
