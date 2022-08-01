@@ -82,6 +82,7 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /get {name} — getting content that was saved by `/set`
   - /get_list — getting a list of possible /get
   - /ahegao — getting a random ahegao
+  - /urban {phrase?} — get the random or the phrase (if specified) definition from urban dictionary
 
 ## API
 
@@ -126,12 +127,15 @@ This application automatically loads variables specified in [`.env`](https://www
   - `REDISCLOUD_URL` — Redis connection URL that can be accepted by [ioredis](https://www.npmjs.com/package/ioredis/v/4.28.3) (can also be ignored)
   - `PORT` — Port for API (can be ignored)
   - `ENV` — define environment, if equals `dev` (or if `PORT` is not specified) will start polling for Telegram client, if is absent will start webhooking
+
 ## config.json
 
 Config file is used to share some non-secret variables
 
   - `AHEGAO_API` — API to get urls for random ahegao
   - `API_HOMEPAGE` — URL to which redirect home (`/`) endpoint to
+  - `DOMAIN` — base URL for webhooking
+  - `URBAN_API` — API for definitions from urban dictionary
 
 ## Discord Slash Commands Registration
 
@@ -155,4 +159,4 @@ npm start
   - Many thanks to:
     - [@egecelikci](https://github.com/egecelikci) for making a dataset of ahegao
     - Everyone who continues working on [telegraf](https://github.com/telegraf/telegraf) framework
-    - Developers of [discord.js](https://github.com/discordjs/discord.js) — for making its guide and frameword itself
+    - Developers of [discord.js](https://github.com/discordjs/discord.js) — for making its guide and framework itself
