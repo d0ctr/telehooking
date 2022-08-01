@@ -83,4 +83,4 @@ main();
 
 process.on('uncaughtException', (error) => {
     console.error('Got unhandledException:', error);
-})
+});

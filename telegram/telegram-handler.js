@@ -293,7 +293,7 @@ class TelegramHandler {
             return;
         }
         if (!ahegao_url) {
-            thid._reply(context, `Вроде было, но не могу найти ни одно ахегао`);
+            this._reply(context, `Вроде было, но не могу найти ни одно ахегао`);
             return;
         }
         if (ahegao_url.split('.').slice(-1) === 'gif') {

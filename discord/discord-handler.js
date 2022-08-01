@@ -100,12 +100,10 @@ class DiscordHandler {
         if (!interaction.guild) {
             return this.reply(interaction, `You can only subscribe for events in server's channels.`);
         }
-        if (!interaction.options.getChannel('channel'))
-        {
+        if (!interaction.options.getChannel('channel')) {
             return this.reply(interaction, `You can't subscribe if you don't provide a channel for that.`);
         }
-        if (!interaction.options.getString('telegram_chat_id'))
-        {
+        if (!interaction.options.getString('telegram_chat_id')) {
             return this.reply(interaction, `You can't subscribe if you don't provide a telegram chat to notify.`);
         }
         
@@ -128,8 +126,7 @@ class DiscordHandler {
         if (!interaction.guild) {
             return this.reply(interaction, `You can only subscribe from events in server's channels.`);
         }
-        if (!interaction.options.getChannel('channel'))
-        {
+        if (!interaction.options.getChannel('channel')) {
             return this.reply(interaction, `You can't unsubscribe if you don't provide a channel for that.`);
         }
         

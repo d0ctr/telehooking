@@ -160,8 +160,7 @@ class ChannelSubscriber {
             parsed_state.other_members = {};
             state.channel.members.forEach((member, key) => {
                 if (key !== parsed_state.user_id) {
-                    parsed_state.other_members[key] = 
-                        {
+                    parsed_state.other_members[key] = {
                             user_id: member.user.id,
                             user_name: member.user.username,
                             streaming: member.voice.streaming,
