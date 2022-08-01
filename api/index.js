@@ -7,22 +7,22 @@ class API {
         this.app = app;
         this.logger = app.logger.child({ module: 'api' });
 
-        this.api = express();
+        this.express = express();
 
-        this.api.use((req, res, next) => {
+        this.express.use((req, res, next) => {
             this.logger.info(`Received [${req.method} : ${req.url}]${Object.keys(req.params).length ? ` [${JSON.stringify(req.params)}]` : ''}`);
             next();
         });
 
-        this.api.get('/', (req, res) => {
+        this.express.get('/', (req, res) => {
             res.redirect(config.API_HOMEPAGE);
         });
 
-        this.api.get('/health', (req, res) => {
+        this.express.get('/health', (req, res) => {
             res.json(this.app.health);
         })
 
-        this.api.get('/health/:name', (req, res) => {
+        this.express.get('/health/:name', (req, res) => {
             if (req.params.name && Object.keys(this.app.health).includes(req.params.name)) {
                 res.json({
                     [req.params.name]: this.app.health[req.params.name]
@@ -46,7 +46,7 @@ class API {
             this.logger.warn(`Port for API wasn't specified, API is not started.`);
             return;
         }
-        this.api.listen(process.env.PORT, () => {
+        this.express.listen(process.env.PORT, () => {
             this.logger.info('API is ready');
             this.health = 'ready';
         })

@@ -180,22 +180,32 @@ class TelegramClient {
             return;
         }
         if (process.env.ENV === 'dev' || !process.env.PORT) {
-            this.client.launch().then(() => {
-                this.health = 'ready';
-            }).catch(reason => {
-                this.logger.error(`Error while starting Telegram client: ${reason}`);
-                this.health = 'off';
-            });
+            this._start_polling();
         }
         else {
             this.client.telegram.setWebhook(`${config.DOMAIN}/telegram/${this.client.secretPathComponent()}`).then(() => {
                 this.logger.info('Telegram webhook is set.');
                 this.health = 'set';
-                this.app.api.use(this.client.webhookCallback(`/telegram/${this.client.secretPathComponent()}`));
+                this.app.api.api.use(this.client.webhookCallback(`/telegram/${this.client.secretPathComponent()}`));
             }).catch(reason => {
                 this.logger.error(`Error while setting telegram webhook: ${reason.stack}`);
+                this.logger.info('Trying to start with polling');
+                this._start_polling();
             });
         }
+    }
+
+    _start_polling() {
+        if (!process.env.TELEGRAM_TOKEN) {
+            this.logger.warn(`Token for Telegram wasn't specified, client is not started.`);
+            return;
+        }
+        this.client.launch().then(() => {
+            this.health = 'ready';
+        }).catch(reason => {
+            this.logger.error(`Error while starting Telegram client: ${reason}`);
+            this.health = 'off';
+        });
     }
 
     async send_notification(notification_data, chat_id) {
