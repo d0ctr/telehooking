@@ -1,7 +1,7 @@
 const TeleTypes = require('telegraf/types');
 const TelegrafTypes = require('telegraf');
 const mathjs = require('mathjs');
-const { get_ahegao_url } = require('./utils');
+const { get_ahegao_url, get_urban_definition } = require('./utils');
 
 const get_regex = /^[a-zA-Zа-яА-Я0-9_-]+$/g;
 
@@ -18,12 +18,15 @@ class TelegramHandler {
      * @return {Array<String>} [0] is always a command name
      */
     _parse_args(context, limit) {
-        limit += 1;
         let args = [];
+        // split all words by <space>
         args = context.message.text.replace(/ +/g, ' ').split(' ');
+        // remove `/` from the name of the command
         args[0] = args[0].split('').slice(1).join('');
-        if (limit && limit < args.length && limit > 1) {
-            args[limit - 1] = args.slice(limit - 1).join(' ');
+        // concat args to single arg 
+        if (limit && (limit + 1) < args.length && limit > 0) {
+            args[limit] = args.slice(limit).join(' ');
+            args = args.slice(0, limit)
         }
         return args;
     }
@@ -114,6 +117,7 @@ class TelegramHandler {
 /get {название} - вызвать контент, сохранённый командой <code>/set</code>
 /get_list - показать список гетов, доступных в этом чате
 /ahegao - получить случайное ахегао
+/urban {слово?} - получить значение указанного или случайного слова из <a href="https://www.urbandictionary.com/">Urban Dictionary</>
 `;
         this._reply(context, message);
     }
@@ -302,6 +306,16 @@ class TelegramHandler {
         }
         this._replyWithMedia(context, { type: 'photo', photo: ahegao_url });
     }
-}
+
+    async urban(context) {
+        let word = this._parse_args(context, 1)[1];
+        let definition = await get_urban_definition(word);
+        if (!definition) {
+            this._reply('Не может быть, Urban Dictionary не знает что это за слово');
+            return;
+        }
+        this._reply(context, definition);
+    }
+ }
 
 module.exports = TelegramHandler;

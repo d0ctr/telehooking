@@ -164,6 +164,7 @@ class TelegramClient {
         this.client.command('get', async (ctx) => new TelegramInteraction(this, 'get', ctx).respond());
         this.client.command('get_list', async (ctx) => new TelegramInteraction(this, 'get_list', ctx).respond());
         this.client.command('ahegao', async (ctx) => new TelegramInteraction(this, 'ahegao', ctx).respond());
+        this.client.command('urban', async (ctx) => new TelegramInteraction(this, 'urban', ctx).respond());
     }
 
     set health(value) {
@@ -193,6 +194,12 @@ class TelegramClient {
                 this._start_polling();
             });
         }
+    }
+
+    stop() {
+        this.logger.info('Gracefully shutdowning Telegram client.');
+        this.client.telegram.setWebhook();
+        this.client.stop('Gracefull Shutdown');
     }
 
     _start_polling() {

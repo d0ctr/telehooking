@@ -46,10 +46,20 @@ class API {
             this.logger.warn(`Port for API wasn't specified, API is not started.`);
             return;
         }
-        this.express.listen(process.env.PORT, () => {
+        this._server = this.express.listen(process.env.PORT, () => {
             this.logger.info('API is ready');
             this.health = 'ready';
         })
+    }
+
+    stop() {
+        this.logger.info('Gracefully shutdowning API');
+        this._server.close(err => {
+            if (err) {
+                this.logger.error(`Error while shutdowning API: ${err.stack}`);
+            }
+            this.health = 'off';
+        });
     }
 }
 

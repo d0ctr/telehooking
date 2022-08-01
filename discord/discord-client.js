@@ -71,7 +71,7 @@ class DiscordClient {
 
     async start() {
         if (!process.env.DISCORD_TOKEN) {
-            this.logger.warn(`Token for Discord wasn't specified, client is nott started.`);
+            this.logger.warn(`Token for Discord wasn't specified, client is not started.`);
             return;
         }
         this.client.login(process.env.DISCORD_TOKEN);

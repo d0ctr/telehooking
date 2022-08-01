@@ -85,7 +85,7 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
 
 ## API
 
-Small API to fetch health and redirect to project page.
+Small API for utilities and webhooks.
 
 ### Endpoints
 
@@ -125,7 +125,7 @@ This application automatically loads variables specified in [`.env`](https://www
   - `TELEGRAM_TOKEN` — Telegram bot token (ignore if you are not planning to use it)
   - `REDISCLOUD_URL` — Redis connection URL that can be accepted by [ioredis](https://www.npmjs.com/package/ioredis/v/4.28.3) (can also be ignored)
   - `PORT` — Port for API (can be ignored)
-
+  - `ENV` — define environment, if equals `dev` (or if `PORT` is not specified) will start polling for Telegram client, if is absent will start webhooking
 ## config.json
 
 Config file is used to share some non-secret variables

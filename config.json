@@ -1,5 +1,6 @@
 {
     "AHEGAO_API": "https://ahegao.netlify.app/api",
     "API_HOMEPAGE": "https://d0ctr.github.io/bilderberg-butler",
-    "DOMAIN": "https://bilderberg-butler.herokuapp.com"
+    "DOMAIN": "https://bilderberg-butler.herokuapp.com",
+    "URBAN_API": "https://api.urbandictionary.com/v0"
 }
