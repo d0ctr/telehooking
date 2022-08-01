@@ -179,7 +179,7 @@ class TelegramClient {
             this.logger.warn(`Token for Telegram wasn't specified, client is not started.`);
             return;
         }
-        if (process.env.ENV === 'dev' || this.app.health.api === 'off') {
+        if (process.env.ENV === 'dev' || !process.env.PORT) {
             this.client.launch().then(() => {
                 this.health = 'ready';
             }).catch(reason => {
@@ -193,7 +193,7 @@ class TelegramClient {
                 this.health = 'set';
                 this.app.api.use(this.client.webhookCallback(`/telegram/${this.client.secretPathComponent()}`));
             }).catch(reason => {
-                this.logger.error(`Error while setting telegram webhook: ${err.stack}`);
+                this.logger.error(`Error while setting telegram webhook: ${reason.stack}`);
             });
         }
     }
