@@ -26,7 +26,7 @@ class TelegramHandler {
         // concat args to single arg 
         if (limit && (limit + 1) < args.length && limit > 0) {
             args[limit] = args.slice(limit).join(' ');
-            args = args.slice(0, limit)
+            args = args.slice(0, limit + 1);
         }
         return args;
     }
@@ -311,7 +311,7 @@ class TelegramHandler {
         let word = this._parse_args(context, 1)[1];
         let definition = await get_urban_definition(word);
         if (!definition) {
-            this._reply('Не может быть, Urban Dictionary не знает что это за слово');
+            this._reply(context, 'Не может быть, Urban Dictionary не знает что это за слово');
             return;
         }
         this._reply(context, definition);
