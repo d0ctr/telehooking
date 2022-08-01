@@ -77,10 +77,20 @@ function main() {
 
     app.logger.info('Starting API');
     app.api.start();
+
+    return app;
 }
 
-main();
+let app = main();
 
 process.on('uncaughtException', (error) => {
     console.error('Got unhandledException:', error);
 });
+
+process.on('SIGINT', async () => {
+    logger.child({ module: 'process-listener' }).info('Gracefully shutdowning application...');
+    await app.discord_client.stop();
+    await app.telegram_client.stop();
+    await app.api.stop();
+    process.exit();
+})

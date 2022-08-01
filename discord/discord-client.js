@@ -77,6 +77,14 @@ class DiscordClient {
         this.client.login(process.env.DISCORD_TOKEN);
     }
 
+    async stop() {
+        if (!process.env.DISCORD_TOKEN) {
+            return;
+        }
+        this.logger.info('Gracefully shutdowning Discord client');
+        this.client.destroy();
+    }
+
     async restore_wordle(guild) {
         if (this.guild_to_wordle[guild.id]) {
             this.logger.info(`There is an active Wordle instance for ${guild.id}, no need for restoration`);

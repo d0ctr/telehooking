@@ -41,7 +41,7 @@ class API {
         return this.app.health.api;
     }
 
-    start() {
+    async start() {
         if (!process.env.PORT) {
             this.logger.warn(`Port for API wasn't specified, API is not started.`);
             return;
@@ -52,7 +52,10 @@ class API {
         })
     }
 
-    stop() {
+    async stop() {
+        if (!process.env.PORT) {
+            return;
+        }
         this.logger.info('Gracefully shutdowning API');
         this._server.close(err => {
             if (err) {

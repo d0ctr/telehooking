@@ -175,7 +175,7 @@ class TelegramClient {
         return this.app.health.telegram;
     }
 
-    start() {
+    async start() {
         if (!process.env.TELEGRAM_TOKEN) {
             this.logger.warn(`Token for Telegram wasn't specified, client is not started.`);
             return;
@@ -197,6 +197,9 @@ class TelegramClient {
     }
 
     stop() {
+        if (!process.env.TELEGRAM_TOKEN) {
+            return;
+        }
         this.logger.info('Gracefully shutdowning Telegram client.');
         this.client.telegram.setWebhook();
         this.client.stop('Gracefull Shutdown');
