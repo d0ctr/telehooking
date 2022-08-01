@@ -1,5 +1,6 @@
 const { Telegraf, Context, Telegram } = require('telegraf');
 const TelegramHandler = require('./telegram-handler');
+const config = require('../config.json');
 
 /**
  * One time use interaction between app and telegram
@@ -178,12 +179,23 @@ class TelegramClient {
             this.logger.warn(`Token for Telegram wasn't specified, client is not started.`);
             return;
         }
-        this.client.launch().then(() => {
-            this.health = 'ready';
-        }).catch(reason => {
-            this.logger.error(`Error while starting Telegram client: ${reason}`);
-            this.health = 'off';
-        });
+        if (process.env.ENV === 'dev' || this.app.health.api === 'off') {
+            this.client.launch().then(() => {
+                this.health = 'ready';
+            }).catch(reason => {
+                this.logger.error(`Error while starting Telegram client: ${reason}`);
+                this.health = 'off';
+            });
+        }
+        else {
+            this.client.telegram.setWebhook(`${config.DOMAIN}/telegram/${this.client.secretPathComponent()}`).then(() => {
+                this.logger.info('Telegram webhook is set.');
+                this.health = 'set';
+                this.app.api.use(this.client.webhookCallback(`/telegram/${this.client.secretPathComponent()}`));
+            }).catch(reason => {
+                this.logger.error(`Error while setting telegram webhook: ${err.stack}`);
+            });
+        }
     }
 
     async send_notification(notification_data, chat_id) {

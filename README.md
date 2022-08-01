@@ -7,6 +7,7 @@
     <a href="/LICENSE.md" ><img src="https://img.shields.io/github/license/d0ctr/bilderberg-butler" alt="License" /></a>
     <a><img src="https://img.shields.io/github/package-json/v/d0ctr/bilderberg-butler" /></a>
     <a href="https://libraries.io/github/d0ctr/bilderberg-butler"><img src="https://img.shields.io/librariesio/github/d0ctr/bilderberg-butler" /></a>
+    <a href="https://www.codacy.com/gh/d0ctr/bilderberg-butler/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=d0ctr/bilderberg-butler&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/f7a7727e43a14c01be84a2233c62284b"/></a>
     <a href="https://www.npmjs.com/package/discord.js/v/14.0.3"><img src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/discord.js" /></a>
     <a href="https://www.npmjs.com/package/telegraf/v/4.8.5"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/telegraf" /></a>
     <a href="https://www.npmjs.com/package/ioredis/v/4.28.3"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/ioredis" /></a>
@@ -19,21 +20,23 @@
 
 This is an application that runs two bots simultaniously: one for Discord and one for Telegram.
 
-- [Functionality](#functionality)
-  * [Discord Bot](#discord-bot)
-    + [Commands](#commands)
-    + [Supported Voice Channel Changes](#supported-voice-channel-changes)
-  * [Telegram Bot](#telegram-bot)
-    + [Commands](#commands-1)
-  * [API](#api)
-    + [Endpoints](#endpoints)
-- [Using or altering code](#using-or-altering-code)
-  * [Prerequisities](#prerequisities)
-    + [Acquiring application runtime essentials](#acquiring-application-runtime-essentials)
-    + [Required tools](#required-tools)
-  * [Environment Variables](#environment-variables)
-  * [Discord Slash Commands Registration](#discord-slash-commands-registration)
-  * [Running Bots](#running-bots)
+  - [Functionality](#functionality)
+    * [Discord Bot](#discord-bot)
+      + [Commands](#commands)
+      + [Supported Voice Channel Changes](#supported-voice-channel-changes)
+    * [Telegram Bot](#telegram-bot)
+      + [Commands](#commands-1)
+    * [API](#api)
+      + [Endpoints](#endpoints)
+  - [Using or altering code](#using-or-altering-code)
+    * [Prerequisities](#prerequisities)
+      + [Acquiring application runtime essentials](#acquiring-application-runtime-essentials)
+      + [Required tools](#required-tools)
+    * [Environment Variables](#environment-variables)
+    * [Discord Slash Commands Registration](#discord-slash-commands-registration)
+    * [Running Bots](#running-bots)
+  - [Credits](#credits)
+
 
 # Functionality
 

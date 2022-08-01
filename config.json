@@ -1,4 +1,5 @@
 {
     "AHEGAO_API": "https://ahegao.netlify.app/api",
-    "API_HOMEPAGE": "https://d0ctr.github.io/bilderberg-butler"
+    "API_HOMEPAGE": "https://d0ctr.github.io/bilderberg-butler",
+    "DOMAIN": "https://bilderberg-butler.herokuapp.com"
 }
