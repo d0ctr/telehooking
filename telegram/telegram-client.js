@@ -186,7 +186,7 @@ class TelegramClient {
             this.client.telegram.setWebhook(`${config.DOMAIN}/telegram/${this.client.secretPathComponent()}`).then(() => {
                 this.logger.info('Telegram webhook is set.');
                 this.health = 'set';
-                this.app.api.api.use(this.client.webhookCallback(`/telegram/${this.client.secretPathComponent()}`));
+                this.app.api.express.use(this.client.webhookCallback(`/telegram/${this.client.secretPathComponent()}`));
             }).catch(reason => {
                 this.logger.error(`Error while setting telegram webhook: ${reason.stack}`);
                 this.logger.info('Trying to start with polling');
