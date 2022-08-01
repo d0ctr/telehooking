@@ -307,11 +307,15 @@ class TelegramHandler {
         this._replyWithMedia(context, { type: 'photo', photo: ahegao_url });
     }
 
+    /**
+     * `/urban` command handler
+     * @param {TelegrafTypes.Context} context
+     */
     async urban(context) {
         let word = this._parse_args(context, 1)[1];
         let definition = await get_urban_definition(word);
         if (!definition) {
-            this._reply(context, 'Не может быть, Urban Dictionary не знает что это за слово');
+            this._reply(context, `Не может быть, Urban Dictionary не знает что это за слово\nМожешь проверить сам: <a href="https://www.urbandictionary.com/define.php?term=${word}">ссылка</a>`);
             return;
         }
         this._reply(context, definition);
