@@ -184,7 +184,7 @@ class TelegramClient {
             this._start_polling();
         }
         else {
-            this.client.telegram.setWebhook(`${config.DOMAIN}/telegram/${this.client.secretPathComponent()}`).then(() => {
+            this.client.telegram.setWebhook(`${config.DOMAIN}/telegram-${Date.now()}/${this.client.secretPathComponent()}`).then(() => {
                 this.logger.info('Telegram webhook is set.');
                 this.health = 'set';
                 this.app.api.express.use(this.client.webhookCallback(`/telegram/${this.client.secretPathComponent()}`));
