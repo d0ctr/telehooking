@@ -1,12 +1,14 @@
 const TeleTypes = require('telegraf/types');
 const TelegrafTypes = require('telegraf');
 const mathjs = require('mathjs');
+const { get_ahegao_url } = require('./utils');
+
 const get_regex = /^[a-zA-Zа-яА-Я0-9_-]+$/g;
 
 class TelegramHandler { 
     constructor(client) {
         this.client = client;
-        this.logger = client.logger.child('telegram-handler');
+        this.logger = client.logger.child({ module: 'telegram-handler' });
     }
 
     /**
@@ -18,7 +20,8 @@ class TelegramHandler {
     _parse_args(context, limit) {
         limit += 1;
         let args = [];
-        args = context.message.text.replace(/ +/g, ' ').replace(/\/calc/gm, '').split(' ');
+        args = context.message.text.replace(/ +/g, ' ').split(' ');
+        args[0] = args[0].split('').slice(1).join('');
         if (limit && limit < args.length && limit > 1) {
             args[limit - 1] = args.slice(limit - 1).join(' ');
         }
@@ -64,7 +67,7 @@ class TelegramHandler {
             return;
         }
         this.logger.info(`Can't send what is left of the message ${JSON.stringify(message)}`);
-        message_options.caption && this._reply(context, message_options.caption);
+        message_options.text && this._reply(context, message_options.text);
     }
     /**
      * `/start` command handler
@@ -110,6 +113,7 @@ class TelegramHandler {
 /set {название} - сохранить контент сообщения на которое было отвечено командой
 /get {название} - вызвать контент, сохранённый командой <code>/set</code>
 /get_list - показать список гетов, доступных в этом чате
+/ahegao - получить случайное ахегао
 `;
         this._reply(context, message);
     }
@@ -272,6 +276,31 @@ class TelegramHandler {
             return;
         }
         this._reply(context, `Геты доступные в этом чате:\n\n${gets.join(', ')}`);
+    }
+
+    /**
+     * `/ahegao` command handler
+     * @param {TelegrafTypes.Context} context
+     */
+    async ahegao(context) {
+        let ahegao_url = null;
+        try {
+            ahegao_url = await get_ahegao_url();
+        }
+        catch (err) {
+            this.logger.error(`Error while getting ahegao url: ${err.stack}`);
+            this.reply_(context, `Пока без ахегао, получил следующую ошибку:\n<code>${err}</code>`);
+            return;
+        }
+        if (!ahegao_url) {
+            thid._reply(context, `Вроде было, но не могу найти ни одно ахегао`);
+            return;
+        }
+        if (ahegao_url.split('.').slice(-1) === 'gif') {
+            this._replyWithMedia(context, { type: 'animation', animation: ahegao_url });
+            return;
+        }
+        this._replyWithMedia(context, { type: 'photo', photo: ahegao_url });
     }
 }
 

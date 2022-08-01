@@ -11,6 +11,7 @@
     <a href="https://www.npmjs.com/package/telegraf/v/4.8.5"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/telegraf" /></a>
     <a href="https://www.npmjs.com/package/ioredis/v/4.28.3"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/ioredis" /></a>
     <a><img src="https://heroku-shields.herokuapp.com/bilderberg-butler" /></a>
+    <a href="https://vault.dotenv.org/project/vlt_7b9007f3078ad4bddb4f05ddba592d88ca09adf1d1fda7b5e5c1231595dbcb76/example"><img alt="fork with dotenv-vault" src="https://badge.dotenv.org/fork.svg?r=1" /></a>
     </p>
 </div>
 
@@ -24,6 +25,8 @@ This is an application that runs two bots simultaniously: one for Discord and on
     + [Supported Voice Channel Changes](#supported-voice-channel-changes)
   * [Telegram Bot](#telegram-bot)
     + [Commands](#commands-1)
+  * [API](#api)
+    + [Endpoints](#endpoints)
 - [Using or altering code](#using-or-altering-code)
   * [Prerequisities](#prerequisities)
     + [Acquiring application runtime essentials](#acquiring-application-runtime-essentials)
@@ -75,6 +78,17 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /set {name} — saving content of a message that was replied with this command
   - /get {name} — getting content that was saved by `/set`
   - /get_list — getting a list of possible /get
+  - /ahegao — getting a random ahegao
+
+## API
+
+Small API to fetch health and redirect to project page.
+
+### Endpoints
+
+  - / — go to project page
+  - /health — fetch components health (from "off" to "ready")
+    - /:name — fetch health only of one of the components (redis, discord, telegram, api (ironic))
 
 # Using or altering code
 
@@ -101,12 +115,20 @@ You can use this code to start your own bot/s or you may also contribute somethi
 ## Environment Variables
 
 To authenticate as Discord or/and Telegram application needs tokens and other parameters, you should've acquired them in in guides described in [Prerequisities](#prerequisities).
-This application automatically loads variables specified in `.env` file that you should create yourself or you can export environment variables anyway you like.
+This application automatically loads variables specified in [`.env`](https://www.youtube.com/watch?v=dQw4w9WgXcQ) file that you should create yourself or you can export environment variables anyway you like.
 
   - `DISCORD_TOKEN` — Discord bot token (ignore if you are not planning to use it)
   - `APP_ID` — Discord application id (ignore if you are not planning to use Discord bot)
   - `TELEGRAM_TOKEN` — Telegram bot token (ignore if you are not planning to use it)
   - `REDISCLOUD_URL` — Redis connection URL that can be accepted by [ioredis](https://www.npmjs.com/package/ioredis/v/4.28.3) (can also be ignored)
+  - `PORT` — Port for API (can be ignored)
+
+## config.json
+
+Config file is used to share some non-secret variables
+
+  - `AHEGAO_API` — API to get urls for random ahegao
+  - `API_HOMEPAGE` — URL to which redirect home (`/`) endpoint to
 
 ## Discord Slash Commands Registration
 
@@ -124,3 +146,10 @@ After specifying runtime parameters the way you like you can start bot/s by simp
 ```powershell
 npm start
 ```
+# Credits
+
+  - Authored by [@d0ctr](https://d0ctr.github.io/)
+  - Many thanks to:
+    - [@egecelikci](https://github.com/egecelikci) for making a dataset of ahegao
+    - Everyone who continues working on [telegraf](https://github.com/telegraf/telegraf) framework
+    - Developers of [discord.js](https://github.com/discordjs/discord.js) — for making its guide and frameword itself

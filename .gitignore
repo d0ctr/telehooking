@@ -2,9 +2,11 @@
 node_modules/*
 
 # Secrets
-config.json
 .env
 
 # Workspace files
 .gitpod.yml
 .vscode/*
+.env*
+!.env.project
+!.env.vault

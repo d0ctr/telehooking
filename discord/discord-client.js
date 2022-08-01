@@ -6,7 +6,8 @@ const ChannelSubscriber = require('./channel-subscriber');
 class DiscordClient {
     constructor(app) {
         this.app = app;
-        this.logger = app.logger.child({module: 'discord-client'});
+        this.logger = app.logger.child({ module: 'discord-client' });
+        this.discordjs_logger = app.logger.child({ module: 'discordjs' });
         this.redis = app.redis;
         this.handler = new Handler(this);
         this.client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
@@ -14,10 +15,28 @@ class DiscordClient {
         this.channel_to_subscriber = {};
 
 
-        this.client.once('ready', () => {
+        this.client.on('ready', () => {
             this.logger.info('Discord Client is ready.');
+            this.health = 'ready';
             this.restore_data();
         });
+
+        this.client.on('invalidated', () => {
+            this.logger.warn('Discord Client is invalidated.');
+            this.health = 'invalidated';
+        })
+
+        this.client.on('debug', info => {
+            this.discordjs_logger.debug(`${info}`);
+        });
+
+        this.client.on('warn', info => {
+            this.discordjs_logger.warn(`${info}`);
+        })
+
+        this.client.on('error', error => {
+            this.discordjs_logger.error(`${error}`);
+        })
 
         this.client.on('interactionCreate', async interaction => {
             this.logger.info(`Discord client received: ${JSON.stringify(this.parse_interaction_info(interaction))}`);
@@ -40,6 +59,14 @@ class DiscordClient {
                 this.channel_to_subscriber[prev_state.channelId].notify(prev_state, new_state, prev_state);
             }
         });
+    }
+
+    set health(value) {
+        this.app.health.discord = value;
+    }
+
+    get health() {
+        return this.app.health.discord;
     }
 
     async start() {

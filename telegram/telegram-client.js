@@ -104,7 +104,7 @@ class TelegramInteraction {
 
     async redis_get(name) {
         if (!this._redis) {
-            throw new Error('Нет подключения к хранилищу гетов');
+            throw new Error('Storage is offline');
         }
         let key = `${this.context.chat.id}:get:${name}`;
         return await this._redis.hgetall(key);
@@ -112,7 +112,7 @@ class TelegramInteraction {
 
     async redis_set(name, data) {
         if (!this._redis) {
-            throw new Error('Нет подключения к хранилищу гетов');
+            throw new Error('Storage is offline');
         }
         let key = `${this.context.chat.id}:get:${name}`;
         for (let i in data) {
@@ -128,7 +128,7 @@ class TelegramInteraction {
 
     async redis_get_list() {
         if (!this._redis) {
-            throw new Error('Нет подключения к хранилищу гетов');
+            throw new Error('Storage is offline');
         }
         let key = `${this.context.chat.id}:get:*`;
         let r_keys = await this._redis.keys(key);
@@ -148,8 +148,8 @@ class TelegramClient {
     constructor(app) {
         this.app = app;
         this.redis = app.redis ? app.redis : null;
-        this.logger = app.logger.child({module: 'telegram-client'});
-        this.client = process.env.TELEGRAM_TOKEN && new Telegraf(process.env.TELEGRAM_TOKEN);
+        this.logger = app.logger.child({ module: 'telegram-client' });
+        this.client = new Telegraf(process.env.TELEGRAM_TOKEN);
         this.handler = new TelegramHandler(this);
         this.cooldown_map = {};
         this.cooldown_duration = 5 * 1000;
@@ -162,14 +162,28 @@ class TelegramClient {
         this.client.command('set', async (ctx) => new TelegramInteraction(this, 'set', ctx).respond());
         this.client.command('get', async (ctx) => new TelegramInteraction(this, 'get', ctx).respond());
         this.client.command('get_list', async (ctx) => new TelegramInteraction(this, 'get_list', ctx).respond());
+        this.client.command('ahegao', async (ctx) => new TelegramInteraction(this, 'ahegao', ctx).respond());
+    }
+
+    set health(value) {
+        this.app.health.telegram = value;
+    }
+
+    get health() {
+        return this.app.health.telegram;
     }
 
     start() {
-        if (!this.client) {
+        if (!process.env.TELEGRAM_TOKEN) {
             this.logger.warn(`Token for Telegram wasn't specified, client is not started.`);
             return;
         }
-        this.client.launch();
+        this.client.launch().then(() => {
+            this.health = 'ready';
+        }).catch(reason => {
+            this.logger.error(`Error while starting Telegram client: ${reason}`);
+            this.health = 'off';
+        });
     }
 
     async send_notification(notification_data, chat_id) {
