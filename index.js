@@ -93,4 +93,12 @@ process.on('SIGINT', async () => {
     await app.telegram_client.stop();
     await app.api.stop();
     process.exit();
-})
+});
+
+process.on('SIGTERM', async () => {
+    logger.child({ module: 'process-listener' }).info('Gracefully shutdowning application...');
+    await app.discord_client.stop();
+    await app.telegram_client.stop();
+    await app.api.stop();
+    process.exit();
+});

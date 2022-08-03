@@ -1,6 +1,7 @@
 const { Telegraf, Context, Telegram } = require('telegraf');
 const TelegramHandler = require('./telegram-handler');
 const config = require('../config.json');
+const { get_currencies_list } = require('./utils');
 
 /**
  * One time use interaction between app and telegram
@@ -22,6 +23,7 @@ class TelegramInteraction {
         this.context = context;
         this.handler = client.handler;
         this._redis = client.redis;
+        this._currencies_list = client.currencies_list
     }
 
     /**
@@ -139,6 +141,10 @@ class TelegramInteraction {
         }
         return keys;
     }
+
+    get_currency(name) {
+        return this._currencies_list ? this._currencies_list[name] : null;
+    }
 }
 
 class TelegramClient {
@@ -160,13 +166,34 @@ class TelegramClient {
         this.client.command('calc', async (ctx) => new TelegramInteraction(this, 'calc', ctx).respond());
         this.client.command('discord_notification', async (ctx) => new TelegramInteraction(this, 'discord_notification', ctx).respond());
         this.client.command('ping', async (ctx) => new TelegramInteraction(this, 'ping', ctx).respond());
-        this.client.command('set', async (ctx) => new TelegramInteraction(this, 'set', ctx).respond());
-        this.client.command('get', async (ctx) => new TelegramInteraction(this, 'get', ctx).respond());
-        this.client.command('get_list', async (ctx) => new TelegramInteraction(this, 'get_list', ctx).respond());
-        this.client.command('ahegao', async (ctx) => new TelegramInteraction(this, 'ahegao', ctx).respond());
-        this.client.command('urban', async (ctx) => new TelegramInteraction(this, 'urban', ctx).respond());
+
+        if (app) {
+            this.client.command('set', async (ctx) => new TelegramInteraction(this, 'set', ctx).respond());
+            this.client.command('get', async (ctx) => new TelegramInteraction(this, 'get', ctx).respond());
+            this.client.command('get_list', async (ctx) => new TelegramInteraction(this, 'get_list', ctx).respond());
+        }
+
+        if (config.URBAN_API) {
+            this.client.command('urban', async (ctx) => new TelegramInteraction(this, 'urban', ctx).respond());
+        }
+
+        if (config.AHEGAO_API) {
+            this.client.command('ahegao', async (ctx) => new TelegramInteraction(this, 'ahegao', ctx).respond());
+        }
+
         this.client.command('html', async (ctx) => new TelegramInteraction(this, 'html', ctx).respond());
         this.client.command('fizzbuzz', async (ctx) => new TelegramInteraction(this, 'fizzbuzz', ctx).respond());
+
+        if (process.env.COINMARKETCAP_TOKEN && config.COINMARKETCAP_API) {
+            this.client.command('cur', async (ctx) => new TelegramInteraction(this, 'cur', ctx).respond());
+            get_currencies_list().then(result => {
+                this.currencies_list = result;
+            }).catch(reason => {
+                if (reason) {
+                    this.logger.error(`Error while retrieving currencies list: ${reason}`);
+                }
+            });
+        }
     }
 
     set health(value) {
@@ -182,6 +209,7 @@ class TelegramClient {
             this.logger.warn(`Token for Telegram wasn't specified, client is not started.`);
             return;
         }
+
         if (process.env.ENV === 'dev' || !process.env.PORT) {
             this._start_polling();
         }
