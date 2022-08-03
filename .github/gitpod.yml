@@ -2,7 +2,7 @@ pulls:
 # Enable for pull requests
   perform: true
 # Customize a comment to post on a pull request. Comment out to use the default
-  comment: 'Open this PR in Gitpod'
+#  comment: 'Open this PR in Gitpod'
 
 issues:
 # enable for issues
