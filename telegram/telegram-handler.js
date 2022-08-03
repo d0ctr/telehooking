@@ -331,7 +331,7 @@ class TelegramHandler {
      */
     async html(context) {
         let text = this._parse_args(context, 1)[1].trim();
-        this.reply(context, text);
+        this._reply(context, text);
     }
 
     /**
