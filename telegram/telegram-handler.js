@@ -20,7 +20,7 @@ class TelegramHandler {
     _parse_args(context, limit) {
         let args = [];
         // split all words by <space>
-        args = context.message.text.replace(/ +/g, ' ').split(' ').trim();
+        args = context.message.text.replace(/ +/g, ' ').split(' ');
         // remove `/` from the name of the command
         args[0] = args[0].split('').slice(1).join('');
         // concat args to single arg 
