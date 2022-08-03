@@ -83,7 +83,8 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /get_list — getting a list of possible /get
   - /ahegao — getting a random ahegao
   - /urban {phrase?} — get the random or the phrase (if specified) definition from urban dictionary
-  - /html — return submitted text as HTML formatted
+  - /html {HTML text} — return submitted text as HTML formatted
+  - /cur {amount} {from} {to} — convert amount from one currency to another
 
 ## API
 
@@ -128,6 +129,7 @@ This application automatically loads variables specified in [`.env`](https://www
   - `REDISCLOUD_URL` — Redis connection URL that can be accepted by [ioredis](https://www.npmjs.com/package/ioredis/v/4.28.3) (can also be ignored)
   - `PORT` — Port for API (can be ignored)
   - `ENV` — define environment, if equals `dev` (or if `PORT` is not specified) will start polling for Telegram client, if is absent will start webhooking
+  - `COINMARKETCAP_TOKEN` — CoinMarketCap API token for currency conversion
 
 ## config.json
 
@@ -137,6 +139,7 @@ Config file is used to share some non-secret variables
   - `API_HOMEPAGE` — URL to which redirect home (`/`) endpoint to
   - `DOMAIN` — base URL for webhooking
   - `URBAN_API` — API for definitions from urban dictionary
+  - `COINMARKETCAP_API` — API for CoinMarketCap
 
 ## Discord Slash Commands Registration
 

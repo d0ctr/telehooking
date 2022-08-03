@@ -1,7 +1,7 @@
 const TeleTypes = require('telegraf/types');
 const TelegrafTypes = require('telegraf');
 const mathjs = require('mathjs');
-const { get_ahegao_url, get_urban_definition } = require('./utils');
+const { get_ahegao_url, get_urban_definition, get_conversion } = require('./utils');
 
 const get_regex = /^[a-zA-Zа-яА-Я0-9_-]+$/g;
 
@@ -367,6 +367,48 @@ class TelegramHandler {
         }
         answer = answer.trim();
         this._reply(context, answer);
+    }
+
+    /**
+     * `/cur` command handler
+     * @param {TelegrafTypes.Context} context
+     * @param {}
+     */
+    async cur(context, interaction) {
+        let args = this._parse_args(context, 3).slice(1);
+        if (!args.length) {
+            this._reply(context, `А где аргументы?\nПример использования <code>/cur 1 USD TRY</code>`);
+            return;
+        }
+        let amount = Number(args[0]);
+        if(isNaN(amount)) {
+            this._reply(context, `Неправильный первый аргумент, вместо <b>${amount}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`);
+            return;
+        }
+        let from = interaction.get_currency(args[1]);
+        if (!from) {
+            this._reply(context, `Не могу найти валюту <b>${args[1]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
+            return;
+        }
+        let to = interaction.get_currency(args[2]);
+        if (!to) {
+            this._reply(context, `Не могу найти валюту <b>${args[2]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
+            return;
+        }
+        let result = null;
+        try {
+            result = await get_conversion(amount, from.id, to.id);
+        }
+        catch (err) {
+            this.logger.error(`Error while converting currency: ${err.stack}`);
+            this._reply(context, `Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
+            return;
+        }
+        if(!result) {
+            this._reply(context, `Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
+            return;
+        }
+        this._reply(context, `${result[from.id]} ${from.name} = ${result[to.id].toFixed(2)} ${to.name}`);
     }
  }
 
