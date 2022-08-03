@@ -83,6 +83,7 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /get_list — getting a list of possible /get
   - /ahegao — getting a random ahegao
   - /urban {phrase?} — get the random or the phrase (if specified) definition from urban dictionary
+  - /html — return submitted text as HTML formatted
 
 ## API
 

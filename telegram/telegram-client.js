@@ -165,6 +165,8 @@ class TelegramClient {
         this.client.command('get_list', async (ctx) => new TelegramInteraction(this, 'get_list', ctx).respond());
         this.client.command('ahegao', async (ctx) => new TelegramInteraction(this, 'ahegao', ctx).respond());
         this.client.command('urban', async (ctx) => new TelegramInteraction(this, 'urban', ctx).respond());
+        this.client.command('html', async (ctx) => new TelegramInteraction(this, 'html', ctx).respond());
+        this.client.command('fizzbuzz', async (ctx) => new TelegramInteraction(this, 'fizzbuzz', ctx).respond());
     }
 
     set health(value) {

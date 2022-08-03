@@ -20,7 +20,7 @@ class TelegramHandler {
     _parse_args(context, limit) {
         let args = [];
         // split all words by <space>
-        args = context.message.text.replace(/ +/g, ' ').split(' ');
+        args = context.message.text.replace(/ +/g, ' ').split(' ').trim();
         // remove `/` from the name of the command
         args[0] = args[0].split('').slice(1).join('');
         // concat args to single arg 
@@ -38,7 +38,10 @@ class TelegramHandler {
      */
     _reply(context, text) {
         this.logger.info(`Replying with [${text}]`);
-        context.replyWithHTML(text, { reply_to_message_id: context.message.message_id, disable_web_page_preview: true });
+        context.replyWithHTML(text, { reply_to_message_id: context.message.message_id, disable_web_page_preview: true, allow_sending_without_reply: true }).catch(reason => {
+            this.logger.error(`Could not send message, got an error: ${reason}`);
+            this._reply(context, `Не смог отправить ответ, давай больше так не делать`);
+        });
     }
 
     /**
@@ -55,7 +58,8 @@ class TelegramHandler {
             reply_to_message_id: context.message.message_id,
             caption: message.text,
             parse_mode: 'HTML',
-            disable_web_page_preview: true
+            disable_web_page_preview: true,
+            allow_sending_without_reply: true
         };
 
         let media = message[message.type];
@@ -319,6 +323,50 @@ class TelegramHandler {
             return;
         }
         this._reply(context, definition);
+    }
+
+    /**
+     * `/html` command handler
+     * @param {TelegrafTypes.Context} context
+     */
+    async html(context) {
+        let text = this._parse_args(context, 1)[1].trim();
+        this.reply(context, text);
+    }
+
+    /**
+     * `/fizzbuzz` command handler
+     * @param {TelegrafTypes.Context} context
+     */
+    async fizzbuzz(context) {
+        let args = this._parse_args(context).slice(1);
+        let dict = {};
+        if (!args.length || args.length % 2 !== 0) {
+            this._reply(context, 'Аргументы команды должны представлять из себя последовательность из комбинаций <code>число</code> <code>слово</code>');
+            return;
+        }
+        for (let i = 0; i < args.length; i += 2) {
+            if (isNan(Number(i))) {
+                this._reply(context, `<code>${i}</code> это не число, попробуй ещё раз`);
+                return;
+            }
+            dict[args[i]] = args[i + 1];
+        }
+        let answer = '';
+        for (let i = 1; i < 101; i++) {
+            let result = '';
+            for (let key in dict) {
+                if (i % Number(key) === 0) {
+                    result += dict[key];
+                }
+            }
+            if (result === '') {
+                result = i;
+            }
+            answer += `${result}\n`
+        }
+        answer = answer.trim();
+        this._reply(context, answer);
     }
  }
 
