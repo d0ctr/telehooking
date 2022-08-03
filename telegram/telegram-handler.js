@@ -346,7 +346,7 @@ class TelegramHandler {
             return;
         }
         for (let i = 0; i < args.length; i += 2) {
-            if (isNan(Number(i))) {
+            if (isNaN(Number(i))) {
                 this._reply(context, `<code>${i}</code> это не число, попробуй ещё раз`);
                 return;
             }
