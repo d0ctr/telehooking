@@ -385,12 +385,12 @@ class TelegramHandler {
             this._reply(context, `Неправильный первый аргумент, вместо <b>${amount}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`);
             return;
         }
-        let from = interaction.get_currency(args[1]);
+        let from = interaction.get_currency(args[1].toUpperCase());
         if (!from) {
             this._reply(context, `Не могу найти валюту <b>${args[1]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
             return;
         }
-        let to = interaction.get_currency(args[2]);
+        let to = interaction.get_currency(args[2].toUpperCase());
         if (!to) {
             this._reply(context, `Не могу найти валюту <b>${args[2]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
             return;
