@@ -32,86 +32,40 @@ class TelegramHandler {
     }
 
     /**
-     * Reply to message
-     * @param {TelegrafTypes.Context} context command context
-     * @param {String} text text to send
-     */
-    _reply(context, text) {
-        this.logger.info(`Replying with [${text}]`);
-        context.replyWithHTML(text, { reply_to_message_id: context.message.message_id, disable_web_page_preview: true, allow_sending_without_reply: true }).catch(reason => {
-            this.logger.error(`Could not send message, got an error: ${reason}`);
-            this._reply(context, `Не смог отправить ответ, давай больше так не делать`);
-        });
-    }
-
-    /**
-     * Reply to message with media
-     * @param {TelegrafTypes.Context} context 
-     * @param {Object} message may contain text and an id of one of `[animation, audio, document, video, video_note, voice, sticker]`
-     */
-    _replyWithMedia(context, message) {
-        if (message.text && message.type === 'text') {
-            this._reply(context, message.text);
-            return;
-        }
-        let message_options = {
-            reply_to_message_id: context.message.message_id,
-            caption: message.text,
-            parse_mode: 'HTML',
-            disable_web_page_preview: true,
-            allow_sending_without_reply: true
-        };
-
-        let media = message[message.type];
-
-        let media_type = message.type.split('');
-        media_type[0] = media_type[0].toUpperCase();
-        media_type = media_type.join('');
-
-        if (typeof context['replyWith' + media_type] === 'function') {
-            this.logger.info(`Replying with [${message_options.caption ? `${message_options.caption} ` : ''}${media_type}:${media}]`);
-            context['replyWith' + media_type](media, message_options);
-            return;
-        }
-        this.logger.info(`Can't send what is left of the message ${JSON.stringify(message)}`);
-        message_options.text && this._reply(context, message_options.text);
-    }
-    /**
      * `/start` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @returns {[null, String]}
      */
-    start(context) {
+    start() {
          let message = 'Этот бот что-то может, чтобы узнать что, воспользуйся командой /help';
-         this._reply(context, message);
+         return [null, message];
     }
 
     /**
      * `/calc` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @param {TelegrafTypes.Context} context
+     * @returns {[String | null, String | null]} [err, response]
      */
     calc(context) {
         let math_line = this._parse_args(context, 1)[1];
         if (!math_line) {
-            this._reply(context, 'Напиши хоть что-нибудь, типа: 1+1')
-            return;
+            return ['Напиши хоть что-нибудь, типа: 1+1', null];
         }
         let result = null;
         try { 
-            result = math_line + ' = ' + mathjs.evaluate(math_line).toString();
+            result = `${math_line} = ${mathjs.evaluate(math_line).toString()}`;
         }
         catch (err) {
             this.logger.error('Error while calculating:', err);
-            this._reply(context, 'Что-то ты не то написал, этой командой можно считать только математические выражения');
-            return;
+            return ['Что-то ты не то написал, этой командой можно считать только математические выражения', null];
         }
-        this._reply(context, result);
+        return [null, result];
     }
 
     /**
      * `/help` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @returns {[null, String | null]}
      */
-    help (context) {
+    help() {
         let message = `Вот список доступных команд:
 /help - список команд
 /discord_notification - получение id чата для получения уведомлений из дискорда
@@ -122,42 +76,45 @@ class TelegramHandler {
 /get_list - показать список гетов, доступных в этом чате
 /ahegao - получить случайное ахегао
 /urban {слово?} - получить значение указанного или случайного слова из <a href="https://www.urbandictionary.com/">Urban Dictionary</>
+/html {текст} - конвертировать полученный текст в отформатированный HTML
+/cur {число} {валюта1} {валюта2} - конвертировать число из валюты1 в валюта2
 `;
-        this._reply(context, message);
+        return [null, message];
     }
 
     /**
      * `/discord_notification` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @param {TelegrafTypes.Context} context
+     * @returns {[null, String]}
      */
     discord_notification(context) {
         let message = `Отлично, можно начать работать
 Теперь подпишись на канал в дискорде, указав id этого чата в команде: ${context.chat.id}`;
-        this._reply(context, message);
+        return [null, message];
     }
 
     /**
      * `/ping` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @returns {[null, String]}
      */
-    ping(context) {
+    ping() {
         let message = '<code>pong</code>';
-        this._reply(context, message);
+        return [null, message];
     }
 
     /**
      * `/get` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @param {TelegrafTypes.Context} context
+     * @param {Object} interaction
+     * @returns {[String | null, Object | null]}
      */
     async get(context, interaction) {
         let name = this._parse_args(context, 1)[1];
         if (!name) {
-            this._reply(context, 'Ты забыл указать название гета');
-            return;
+            return ['Ты забыл указать название гета', null];
         }
         if (!name.match(get_regex)) {
-            this._reply(context, 'Название гета может состоять только из букв латинского, русского алфавитов и цифр');
-            return;
+            return ['Название гета может состоять только из букв латинского, русского алфавитов и цифр', null];
         }
         let result = null;
         try {
@@ -165,33 +122,30 @@ class TelegramHandler {
         }
         catch (err) {
             this.logger.error(`Error while saving content to redis: ${err.stack}`);
-            this._reply(context, `Что-то случилось во время получения гета:\n<code>${err}</code>`);
-            return;
+            return [`Что-то случилось во время получения гета:\n<code>${err}</code>`, null];
         }
         if (!result) {
-            this._reply(context, `Такого гета нет, можешь первым его сделать`);
-            return;
+            return [`Такого гета нет, можешь быть первым кто его сделает`, null];
         }
-        this._replyWithMedia(context, result);
+        return [null, result];
     }
 
     /**
      * `/set` command handler
      * @param {TelegrafTypes.Context} context 
+     * @param {Object} interaction
+     * @returns {[String | null, String | null]}
      */
     async set(context, interaction) {
         let name = this._parse_args(context, 1)[1];
         if (!name) {
-            this._reply(context, 'Ты забыл указать название гета');
-            return;
+            return ['Ты забыл указать название гета', null];
         }
         if (!name.match(get_regex)) {
-            this._reply(context, 'Название гета может состоять только из букв латинского, русского алфавитов и цифр');
-            return;
+            return ['Название гета может состоять только из букв латинского, русского алфавитов и цифр', null];
         }
         if(!context.message.reply_to_message) {
-            this._reply(context, 'Чтобы сохранить гет, ответьте на какое-нибудь сообщение с помощью <code>/set {название гета}</code>');
-            return;
+            return ['Чтобы сохранить гет, ответьте на какое-нибудь сообщение с помощью <code>/set {название гета}</code>', null];
         }
 
         let parsed_data = {};
@@ -257,9 +211,8 @@ class TelegramHandler {
             parsed_data.type = 'text';
         }
         else {
-            this._reply(context, `Такое сохранить не получится, сейчас поддерживаются только следующие форматы:
-Простой текст, изображение, гифки, аудио, видео, документы, стикеры, голосовые и видео сообщения`);
-            return;
+            return [`Такое сохранить не получится, сейчас поддерживаются только следующие форматы:
+Простой текст, изображение, гифки, аудио, видео, документы, стикеры, голосовые и видео сообщения`, null];
         }
         
         try {
@@ -267,88 +220,88 @@ class TelegramHandler {
         }
         catch (err) {
             this.logger.error(`Error while saving content to redis: ${err.stack}`);
-            this._reply(context, `Что-то случилось во время сохранения гета:\n<code>${err}</code>`);
-            return;
+            return [`Что-то случилось во время сохранения гета:\n<code>${err}</code>`, null];
         }
-        this._reply(context, `Гет был сохранён, теперь его можно вызвать командой:\n<code>/get ${name}</code>`);
+        return [null, `Гет был сохранён, теперь его можно вызвать командой:\n<code>/get ${name}</code>`];
     }
 
     /**
      * `/get_list` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @param {TelegrafTypes.Context} _
+     * @param {Object} interaction
+     * @returns {[String | null, String | null]}
      */
-    async get_list(context, interaction) {
+    async get_list(_, interaction) {
         let gets = await interaction.redis_get_list();
         if (!gets.length) {
-            this._reply(context, `В этом чате ещё нет ни однго гета`);
-            return;
+            return [`В этом чате ещё нет ни однго гета`, null];
         }
-        this._reply(context, `Геты доступные в этом чате:\n\n${gets.join(', ')}`);
+        return [null, `Геты доступные в этом чате:\n\n${gets.join(', ')}`];
     }
 
     /**
      * `/ahegao` command handler
-     * @param {TelegrafTypes.Context} context
+     * @returns {[String | null, Object | null]}
      */
-    async ahegao(context) {
+    async ahegao() {
         let ahegao_url = null;
         try {
             ahegao_url = await get_ahegao_url();
         }
         catch (err) {
             this.logger.error(`Error while getting ahegao url: ${err.stack}`);
-            this.reply_(context, `Пока без ахегао, получил следующую ошибку:\n<code>${err}</code>`);
-            return;
+            return [`Пока без ахегао, получил следующую ошибку:\n<code>${err}</code>`, null];
         }
         if (!ahegao_url) {
-            this._reply(context, `Вроде было, но не могу найти ни одно ахегао`);
-            return;
+            return [`Вроде было, но не могу найти ни одно ахегао`, null];
         }
         if (ahegao_url.split('.').slice(-1) === 'gif') {
-            this._replyWithMedia(context, { type: 'animation', animation: ahegao_url });
-            return;
+            return [null, { type: 'animation', animation: ahegao_url }];
         }
-        this._replyWithMedia(context, { type: 'photo', photo: ahegao_url });
+        return [null, { type: 'photo', photo: ahegao_url }];
     }
 
     /**
      * `/urban` command handler
      * @param {TelegrafTypes.Context} context
+     * @returns {[String | null, String | null]}
      */
     async urban(context) {
         let word = this._parse_args(context, 1)[1];
         let definition = await get_urban_definition(word);
         if (!definition) {
-            this._reply(context, `Не может быть, Urban Dictionary не знает что это за слово\nМожешь проверить сам: <a href="https://www.urbandictionary.com/define.php?term=${word}">ссылка</a>`);
-            return;
+            return [`Не может быть, Urban Dictionary не знает что это за слово\nМожешь проверить сам: <a href="https://www.urbandictionary.com/define.php?term=${word}">ссылка</a>`, null];
         }
-        this._reply(context, definition);
+        return [null, definition];
     }
 
     /**
      * `/html` command handler
      * @param {TelegrafTypes.Context} context
+     * @returns {[String | null, String | null]}
      */
     async html(context) {
         let text = this._parse_args(context, 1)[1].trim();
-        this._reply(context, text);
+        if (!text) {
+            return [`Для того чтобы получить текст, нужно дать текст размеченный HTML`, null]
+        }
+        return [null, text];
     }
 
     /**
      * `/fizzbuzz` command handler
      * @param {TelegrafTypes.Context} context
+     * @returns {[String | null, String | null]}
      */
     async fizzbuzz(context) {
         let args = this._parse_args(context).slice(1);
         let dict = {};
         if (!args.length || args.length % 2 !== 0) {
-            this._reply(context, 'Аргументы команды должны представлять из себя последовательность из комбинаций <code>число</code> <code>слово</code>');
-            return;
+            return ['Аргументы команды должны представлять из себя последовательность из комбинаций <code>число</code> <code>слово</code>', null];
         }
         for (let i = 0; i < args.length; i += 2) {
             if (isNaN(Number(i))) {
-                this._reply(context, `<code>${i}</code> это не число, попробуй ещё раз`);
-                return;
+                return [`<code>${i}</code> это не число, попробуй ещё раз`, null];
             }
             dict[args[i]] = args[i + 1];
         }
@@ -366,34 +319,30 @@ class TelegramHandler {
             answer += `${result}\n`
         }
         answer = answer.trim();
-        this._reply(context, answer);
+        return [null, answer];
     }
 
     /**
      * `/cur` command handler
      * @param {TelegrafTypes.Context} context
-     * @param {}
+     * @returns {[String | null, Object | null]}
      */
     async cur(context, interaction) {
         let args = this._parse_args(context, 3).slice(1);
         if (!args.length) {
-            this._reply(context, `А где аргументы?\nПример использования <code>/cur 1 USD TRY</code>`);
-            return;
+            return [`А где аргументы?\nПример использования <code>/cur 1 USD TRY</code>`, null];
         }
         let amount = Number(args[0]);
         if(isNaN(amount)) {
-            this._reply(context, `Неправильный первый аргумент, вместо <b>${amount}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`);
-            return;
+            return [`Неправильный первый аргумент, вместо <b>${amount}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`, null];
         }
         let from = interaction.get_currency(args[1].toUpperCase());
         if (!from) {
-            this._reply(context, `Не могу найти валюту <b>${args[1]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
-            return;
+            return [`Не могу найти валюту <b>${args[1]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
         }
         let to = interaction.get_currency(args[2].toUpperCase());
         if (!to) {
-            this._reply(context, `Не могу найти валюту <b>${args[2]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
-            return;
+            return [`Не могу найти валюту <b>${args[2]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
         }
         let result = null;
         try {
@@ -401,14 +350,12 @@ class TelegramHandler {
         }
         catch (err) {
             this.logger.error(`Error while converting currency: ${err.stack}`);
-            this._reply(context, `Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
-            return;
+            return [`Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
         }
         if(!result) {
-            this._reply(context, `Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`);
-            return;
+            return [`Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
         }
-        this._reply(context, `${result[from.id]} ${from.name} = ${result[to.id].toFixed(2)} ${to.name}`);
+        return [null, `${result[from.id]} ${from.name} = ${result[to.id].toFixed(2)} ${to.name}`];
     }
  }
 

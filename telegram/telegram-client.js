@@ -95,13 +95,27 @@ class TelegramInteraction {
     }
 
     async respond() {
-        this.logger.info(`Received command: ${this.context.message.text}`);
         try {
-            await this.handler[this.command_name](this.context, this);
+            if (typeof this.handler[this.command_name] === 'function') {
+                this.logger.info(`Received command: ${this.context.message.text}`);
+                const [err, response] = await this.handler[this.command_name](this.context, this);
+                if (err) {
+                    return this._reply(err);
+                }
+                if (response instanceof String) {
+                    return this._reply(response);
+                }
+                if (response instanceof Object) {
+                    return this._replyWithMedia(response);
+                }
+            }
+            else {
+                this.logger.info(`Received nonsense, how did it get here???: ${this.context.message.text}`);
+            }
         }
         catch (err) {
-            this.logger.error(`Error while processing command: ${err.stack}`);
-            this.context.replyWithHTML(`Что-то случилось:\n<code>${err}</code>`);
+            this.logger.error(`Error while processing command [${this.context.message.text}]: ${err.stack}`);
+            this._reply(`Что-то случилось:\n<code>${err}</code>`);
         }
     }
 
@@ -144,6 +158,56 @@ class TelegramInteraction {
 
     get_currency(name) {
         return this._currencies_list ? this._currencies_list[name] : null;
+    }
+
+    /**
+     * Reply to message
+     * @param {String} text text to send
+     * @return {Message | null}
+     */
+    async _reply(text) {
+        this.logger.info(`Replying with [${text}]`);
+        try {
+            return await this.context.replyWithHTML(text, {
+                reply_to_message_id: this.context.message.message_id,
+                disable_web_page_preview: true,
+                allow_sending_without_reply: true
+            });
+        } catch (reason) {
+            this.logger.error(`Could not send message, got an error: ${reason}`);
+            return this._reply(`Не смог отправить ответ, давай больше так не делать`);
+        }
+    }
+
+    /**
+     * Reply to message with media
+     * @param {Object} message may contain text and an id of one of `[animation, audio, document, video, video_note, voice, sticker]`
+     * @return {Message | null}
+     */
+    _replyWithMedia(message) {
+        if (message.text && message.type === 'text') {
+            return this._reply(message.text);
+        }
+        let message_options = {
+            reply_to_message_id: this.context.message.message_id,
+            caption: message.text,
+            parse_mode: 'HTML',
+            disable_web_page_preview: true,
+            allow_sending_without_reply: true
+        };
+
+        let media = message[message.type];
+
+        let media_type = message.type.split('');
+        media_type[0] = media_type[0].toUpperCase();
+        media_type = media_type.join('');
+
+        if (typeof this.context['replyWith' + media_type] === 'function') {
+            this.logger.info(`Replying with [${message_options.caption ? `${message_options.caption} ` : ''}${media_type}:${media}]`);
+            return await this.context['replyWith' + media_type](media, message_options);
+        }
+        this.logger.info(`Can't send what is left of the message ${JSON.stringify(message)}`);
+        return (message_options.text || null) && this._reply(message_options.caption);
     }
 }
 
