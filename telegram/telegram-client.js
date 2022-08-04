@@ -100,13 +100,13 @@ class TelegramInteraction {
                 this.logger.info(`Received command: ${this.context.message.text}`);
                 const [err, response] = await this.handler[this.command_name](this.context, this);
                 if (err) {
-                    return this._reply(err);
+                    return await this._reply(err);
                 }
                 if (response instanceof String) {
-                    return this._reply(response);
+                    return await this._reply(response);
                 }
                 if (response instanceof Object) {
-                    return this._replyWithMedia(response);
+                    return await this._replyWithMedia(response);
                 }
             }
             else {
@@ -184,7 +184,7 @@ class TelegramInteraction {
      * @param {Object} message may contain text and an id of one of `[animation, audio, document, video, video_note, voice, sticker]`
      * @return {Message | null}
      */
-    _replyWithMedia(message) {
+    async _replyWithMedia(message) {
         if (message.text && message.type === 'text') {
             return this._reply(message.text);
         }
