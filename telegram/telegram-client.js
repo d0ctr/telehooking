@@ -102,7 +102,7 @@ class TelegramInteraction {
                 if (err) {
                     return await this._reply(err);
                 }
-                if (response instanceof String) {
+                if (response instanceof String || typeof response === 'string') {
                     return await this._reply(response);
                 }
                 if (response instanceof Object) {
