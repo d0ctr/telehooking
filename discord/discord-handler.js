@@ -8,7 +8,7 @@ class DiscordHandler {
         this.logger = client.logger.child({module: 'discord-handler'});
     }
 
-    async handle_command(interaction) {
+    async handleCommand(interaction) {
         if (!this['_' + interaction.commandName]) {
             return this.reply(interaction, 'There is no such command.');
         }
@@ -89,7 +89,7 @@ class DiscordHandler {
         });
         if (this.client.guild_to_wordle[interaction.guild.id]) {
             this.client.guild_to_wordle[interaction.guild.id].stop();
-            this.client.guild_to_wordle[interaction.guild.id].delete_dump();
+            this.client.guild_to_wordle[interaction.guild.id].deleteDump();
             delete this.client.guild_to_wordle[interaction.guild.id];
         }
 

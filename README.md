@@ -9,14 +9,14 @@
     <a href="https://libraries.io/github/d0ctr/bilderberg-butler"><img src="https://img.shields.io/librariesio/github/d0ctr/bilderberg-butler" /></a>
     <a href="https://www.codacy.com/gh/d0ctr/bilderberg-butler/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=d0ctr/bilderberg-butler&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/f7a7727e43a14c01be84a2233c62284b"/></a>
     <a href="https://www.npmjs.com/package/discord.js/v/14.0.3"><img src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/discord.js" /></a>
-    <a href="https://www.npmjs.com/package/telegraf/v/4.8.5"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/telegraf" /></a>
+    <a href="https://www.npmjs.com/package/grammy/v/1.10.1"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/grammy" /></a>
     <a href="https://www.npmjs.com/package/ioredis/v/4.28.3"><img alt="GitHub package.json dependency version (prod)" src="https://img.shields.io/github/package-json/dependency-version/d0ctr/bilderberg-butler/ioredis" /></a>
     <a><img src="https://heroku-shields.herokuapp.com/bilderberg-butler" /></a>
     <a href="https://vault.dotenv.org/project/vlt_7b9007f3078ad4bddb4f05ddba592d88ca09adf1d1fda7b5e5c1231595dbcb76/example"><img alt="fork with dotenv-vault" src="https://badge.dotenv.org/fork.svg?r=1" /></a>
     </p>
 </div>
 
-# Bilderberg Butler
+<a href="https://t.me/BilderbergButler_bot"><h1>@Bilderberg Butler</h1></a>
 
 This is an application that runs two bots simultaniously: one for Discord and one for Telegram.
 
@@ -26,6 +26,7 @@ This is an application that runs two bots simultaniously: one for Discord and on
       + [Supported Voice Channel Changes](#supported-voice-channel-changes)
     * [Telegram Bot](#telegram-bot)
       + [Commands](#commands-1)
+      + [Inline Query](#inline-query)
     * [API](#api)
       + [Endpoints](#endpoints)
   - [Using or altering code](#using-or-altering-code)
@@ -86,6 +87,21 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /html {HTML text} — return submitted text as HTML formatted
   - /cur {amount} {from} {to} — convert amount from one currency to another
 
+### Inline Query
+
+You can get results of some of the commands by typing somewhat like `@<Bot name> Ping {{/ping}}` in Telegram app in input field, mentioned example will result in sending `Ping pong`, where `pong` is the result of the `/ping` command.
+
+Not all commands are supported, and they may also give different results compared to the usual use.
+
+ - /ping - returns `pong` (embeds in your message)
+ - /calc {math eq} — will return only the result of the equation (embeds)
+ - /get — will return gif, video, voice, audio, photo, sticker or text that was saved with `/get` in user's private chat with bot (will embed only if didn't contain a caption originally)
+ - /get_list — will return only the list of available gets (embeds)
+ - /ahegao — will return a random ahegao (embeds)
+ - /urban {pharse?} — will return article (doesn't embed)
+ - /html — will return the same result as usual (embeds)
+ - /cur {amount} {from} {to} — will return only the resulting amount (embeds)
+
 ## API
 
 Small API for utilities and webhooks.
@@ -140,6 +156,7 @@ Config file is used to share some non-secret variables
   - `DOMAIN` — base URL for webhooking
   - `URBAN_API` — API for definitions from urban dictionary
   - `COINMARKETCAP_API` — API for CoinMarketCap
+  - `VIDEO_THUMB_URL` — placeholder for video thumbnail in inline query results
 
 ## Discord Slash Commands Registration
 
@@ -159,8 +176,8 @@ npm start
 ```
 # Credits
 
-  - Authored by [@d0ctr](https://d0ctr.github.io/)
+  - Authored by [@d0ctr](https://d0ctr.github.io/d0ctr)
   - Many thanks to:
     - [@egecelikci](https://github.com/egecelikci) for making a dataset of ahegao
-    - Everyone who continues working on [telegraf](https://github.com/telegraf/telegraf) framework
+    - The developers and maintainers of [grammY](https://github.com/grammyjs/grammY) framework
     - Developers of [discord.js](https://github.com/discordjs/discord.js) — for making its guide and framework itself

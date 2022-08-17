@@ -1,5 +1,4 @@
-const TeleTypes = require('telegraf/types');
-const TelegrafTypes = require('telegraf');
+const GrammyTypes = require('grammy');
 const mathjs = require('mathjs');
 const { get_ahegao_url, get_urban_definition, get_conversion } = require('./utils');
 
@@ -13,14 +12,14 @@ class TelegramHandler {
 
     /**
      * Parse command line
-     * @param {TelegrafTypes.Context} context
+     * @param {GrammyTypes.Context | Object} input
      * @param {Integer} limit number of parsable args
      * @return {Array<String>} [0] is always a command name
      */
-    _parse_args(context, limit) {
+    _parseArgs(input, limit) {
         let args = [];
         // split all words by <space>
-        args = context.message.text.replace(/ +/g, ' ').split(' ');
+        args = input.message.text.replace(/ +/g, ' ').split(' ');
         // remove `/` from the name of the command
         args[0] = args[0].split('').slice(1).join('');
         // concat args to single arg 
@@ -42,13 +41,13 @@ class TelegramHandler {
 
     /**
      * `/calc` command handler
-     * @param {TelegrafTypes.Context} context
-     * @returns {[String | null, String | null]} [err, response]
+     * @param {GrammyTypes.Context | Object} input
+     * @returns {[String | null, String | null, String | null]} [err, response, short_response]
      */
-    calc(context) {
-        let math_line = this._parse_args(context, 1)[1];
+    calc(input) {
+        let math_line = this._parseArgs(input, 1)[1];
         if (!math_line) {
-            return ['Напиши хоть что-нибудь, типа: 1+1', null];
+            return ['Напиши хоть что-нибудь, типа: 1+1'];
         }
         let result = null;
         try { 
@@ -56,9 +55,9 @@ class TelegramHandler {
         }
         catch (err) {
             this.logger.error('Error while calculating:', err);
-            return ['Что-то ты не то написал, этой командой можно считать только математические выражения', null];
+            return ['Что-то ты не то написал, этой командой можно считать только математические выражения'];
         }
-        return [null, result];
+        return [null, result, mathjs.evaluate(math_line).toString()];
     }
 
     /**
@@ -84,12 +83,12 @@ class TelegramHandler {
 
     /**
      * `/discord_notification` command handler
-     * @param {TelegrafTypes.Context} context
+     * @param {GrammyTypes.Context | Object} input
      * @returns {[null, String]}
      */
-    discord_notification(context) {
+    discord_notification(input) {
         let message = `Отлично, можно начать работать
-Теперь подпишись на канал в дискорде, указав id этого чата в команде: ${context.chat.id}`;
+Теперь подпишись на канал в дискорде, указав id этого чата в команде: ${input.chat.id}`;
         return [null, message];
     }
 
@@ -104,139 +103,141 @@ class TelegramHandler {
 
     /**
      * `/get` command handler
-     * @param {TelegrafTypes.Context} context
+     * @param {GrammyTypes.Context | Object} input
      * @param {Object} interaction
      * @returns {[String | null, Object | null]}
      */
-    async get(context, interaction) {
-        let name = this._parse_args(context, 1)[1];
+    async get(input, interaction) {
+        let name = this._parseArgs(input, 1)[1];
         if (!name) {
-            return ['Ты забыл указать название гета', null];
+            return ['Ты забыл указать название гета'];
         }
         if (!name.match(get_regex)) {
-            return ['Название гета может состоять только из букв латинского, русского алфавитов и цифр', null];
+            return ['Название гета может состоять только из букв латинского, русского алфавитов и цифр'];
         }
         let result = null;
         try {
-            result = await interaction.redis_get(name);
+            result = await interaction.redisGet(name);
         }
         catch (err) {
             this.logger.error(`Error while saving content to redis: ${err.stack}`);
-            return [`Что-то случилось во время получения гета:\n<code>${err}</code>`, null];
+            return [`Что-то случилось во время получения гета:\n<code>${err}</code>`];
         }
         if (!result) {
-            return [`Такого гета нет, можешь быть первым кто его сделает`, null];
+            return [`Такого гета нет, можешь быть первым кто его сделает`];
         }
         return [null, result];
     }
 
     /**
      * `/set` command handler
-     * @param {TelegrafTypes.Context} context 
+     * @param {GrammyTypes.Context | Object} input 
      * @param {Object} interaction
      * @returns {[String | null, String | null]}
      */
-    async set(context, interaction) {
-        let name = this._parse_args(context, 1)[1];
+    async set(input, interaction) {
+        let name = this._parseArgs(input, 1)[1];
         if (!name) {
-            return ['Ты забыл указать название гета', null];
+            return ['Ты забыл указать название гета'];
         }
         if (!name.match(get_regex)) {
-            return ['Название гета может состоять только из букв латинского, русского алфавитов и цифр', null];
+            return ['Название гета может состоять только из букв латинского, русского алфавитов и цифр'];
         }
-        if(!context.message.reply_to_message) {
-            return ['Чтобы сохранить гет, ответьте на какое-нибудь сообщение с помощью <code>/set {название гета}</code>', null];
+        if(!input.message.reply_to_message) {
+            return ['Чтобы сохранить гет, ответьте на какое-нибудь сообщение с помощью <code>/set {название гета}</code>'];
         }
 
         let parsed_data = {};
 
-        if (context.message.reply_to_message.animation) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        if (input.message.reply_to_message.animation) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.animation = context.message.reply_to_message.animation.file_id;
+            parsed_data.animation = input.message.reply_to_message.animation.file_id;
             parsed_data.type = 'animation';
         }
-        else if (context.message.reply_to_message.audio) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        else if (input.message.reply_to_message.audio) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.audio = context.message.reply_to_message.audio.file_id;
+            parsed_data.audio = input.message.reply_to_message.audio.file_id;
             parsed_data.type = 'audio';
         }
-        else if (context.message.reply_to_message.document) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        else if (input.message.reply_to_message.document) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.document = context.message.reply_to_message.document.file_id;
+            parsed_data.document = input.message.reply_to_message.document.file_id;
             parsed_data.type = 'document';
         }
-        else if (context.message.reply_to_message.video) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        else if (input.message.reply_to_message.video) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.video = context.message.reply_to_message.video.file_id;
+            parsed_data.video = input.message.reply_to_message.video.file_id;
             parsed_data.type = 'video';
         }
-        else if (context.message.reply_to_message.video_note) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        else if (input.message.reply_to_message.video_note) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.video_note = context.message.reply_to_message.video_note.file_id;
+            parsed_data.video_note = input.message.reply_to_message.video_note.file_id;
             parsed_data.type = 'video_note';
         }
-        else if (context.message.reply_to_message.voice) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        else if (input.message.reply_to_message.voice) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.voice = context.message.reply_to_message.voice.file_id;
+            parsed_data.voice = input.message.reply_to_message.voice.file_id;
             parsed_data.type = 'voice';
         }
-        else if (context.message.reply_to_message.sticker) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        else if (input.message.reply_to_message.sticker) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.sticker = context.message.reply_to_message.sticker.file_id;
+            parsed_data.sticker = input.message.reply_to_message.sticker.file_id;
             parsed_data.type = 'sticker';
         }
-        else if (context.message.reply_to_message.photo) {
-            if (context.message.reply_to_message.caption) {
-                parsed_data.text = context.message.reply_to_message.caption;
+        else if (input.message.reply_to_message.photo) {
+            if (input.message.reply_to_message.caption) {
+                parsed_data.text = input.message.reply_to_message.caption;
             }
-            parsed_data.photo = context.message.reply_to_message.photo[0].file_id;
+            parsed_data.photo = input.message.reply_to_message.photo[0].file_id;
             parsed_data.type = 'photo';
         }
-        else if (context.message.reply_to_message.text) {
-            parsed_data.text = context.message.reply_to_message.text;
+        else if (input.message.reply_to_message.text) {
+            parsed_data.text = input.message.reply_to_message.text;
             parsed_data.type = 'text';
         }
         else {
             return [`Такое сохранить не получится, сейчас поддерживаются только следующие форматы:
-Простой текст, изображение, гифки, аудио, видео, документы, стикеры, голосовые и видео сообщения`, null];
+Простой текст, изображение, гифки, аудио, видео, документы, стикеры, голосовые и видео сообщения`];
         }
         
         try {
-            await interaction.redis_set(name, parsed_data);
+            await interaction.redisSet(name, parsed_data);
         }
         catch (err) {
             this.logger.error(`Error while saving content to redis: ${err.stack}`);
-            return [`Что-то случилось во время сохранения гета:\n<code>${err}</code>`, null];
+            return [`Что-то случилось во время сохранения гета:\n<code>${err}</code>`];
         }
-        return [null, `Гет был сохранён, теперь его можно вызвать командой:\n<code>/get ${name}</code>`];
+
+        return [null, `Гет был сохранён, теперь его можно вызвать командой:\n<code>/get ${name}</code>${
+            input.chat.id === input.from.id ? `\nТак же можешь вызвать этот гет написав <code>@BilderbergButler_bot {{/get ${name}}}</code> в поле ввода сообщения` : ''}`];
     }
 
     /**
      * `/get_list` command handler
-     * @param {TelegrafTypes.Context} _
+     * @param {GrammyTypes.Context} _
      * @param {Object} interaction
      * @returns {[String | null, String | null]}
      */
     async get_list(_, interaction) {
-        let gets = await interaction.redis_get_list();
+        let gets = await interaction.redisGetList();
         if (!gets.length) {
-            return [`В этом чате ещё нет ни однго гета`, null];
+            return [`В этом чате ещё нет ни однго гета`];
         }
-        return [null, `Геты доступные в этом чате:\n\n${gets.join(', ')}`];
+        return [null, `Геты доступные в этом чате:\n\n${gets.join(', ')}`, `${gets.join(', ')}`];
     }
 
     /**
@@ -250,58 +251,65 @@ class TelegramHandler {
         }
         catch (err) {
             this.logger.error(`Error while getting ahegao url: ${err.stack}`);
-            return [`Пока без ахегао, получил следующую ошибку:\n<code>${err}</code>`, null];
+            return [`Пока без ахегао, получил следующую ошибку:\n<code>${err}</code>`];
         }
         if (!ahegao_url) {
-            return [`Вроде было, но не могу найти ни одно ахегао`, null];
+            return [`Вроде было, но не могу найти ни одно ахегао`];
         }
         if (ahegao_url.split('.').slice(-1) === 'gif') {
             return [null, { type: 'animation', animation: ahegao_url }];
         }
-        return [null, { type: 'photo', photo: ahegao_url }];
+        return [null, { type: 'photo', photo: ahegao_url, url: ahegao_url }];
     }
 
     /**
      * `/urban` command handler
-     * @param {TelegrafTypes.Context} context
-     * @returns {[String | null, String | null]}
+     * @param {GrammyTypes.Context | Object} input
+     * @returns {[String | null, Object | null]}
      */
-    async urban(context) {
-        let word = this._parse_args(context, 1)[1];
-        let definition = await get_urban_definition(word);
-        if (!definition) {
-            return [`Не может быть, Urban Dictionary не знает что это за слово\nМожешь проверить сам: <a href="https://www.urbandictionary.com/define.php?term=${word}">ссылка</a>`, null];
+    async urban(input) {
+        let word = this._parseArgs(input, 1)[1];
+        let definition = null;
+        try {
+            definition = await get_urban_definition(word);
         }
-        return [null, definition];
+        catch (err) {
+            this.logger.error(`Error while getting definiton from Urban Dictionary: ${err.stack}`);
+            return [`Турбулентность по пути в Urban Disctionary, попробуйте сами: <a href="https://www.urbandictionary.com/define.php?term=${word}">ссылка</a>`];
+        }
+        if (!definition) {
+            return [`Не может быть, Urban Dictionary не знает что это за слово\nМожешь проверить сам: <a href="https://www.urbandictionary.com/define.php?term=${word}">ссылка</a>`];
+        }
+        return [null, { type: 'text', text: definition }];
     }
 
     /**
      * `/html` command handler
-     * @param {TelegrafTypes.Context} context
+     * @param {GrammyTypes.Context | Object} input
      * @returns {[String | null, String | null]}
      */
-    async html(context) {
-        let text = this._parse_args(context, 1)[1].trim();
+    async html(input) {
+        let text = this._parseArgs(input, 1)[1].trim();
         if (!text) {
-            return [`Для того чтобы получить текст, нужно дать текст размеченный HTML`, null]
+            return [`Для того чтобы получить текст, нужно дать текст размеченный HTML`]
         }
-        return [null, text];
+        return [null, text, text];
     }
 
     /**
      * `/fizzbuzz` command handler
-     * @param {TelegrafTypes.Context} context
+     * @param {GrammyTypes.Context | Object} input
      * @returns {[String | null, String | null]}
      */
-    async fizzbuzz(context) {
-        let args = this._parse_args(context).slice(1);
+    async fizzbuzz(input) {
+        let args = this._parseArgs(input).slice(1);
         let dict = {};
         if (!args.length || args.length % 2 !== 0) {
-            return ['Аргументы команды должны представлять из себя последовательность из комбинаций <code>число</code> <code>слово</code>', null];
+            return ['Аргументы команды должны представлять из себя последовательность из комбинаций <code>число</code> <code>слово</code>'];
         }
         for (let i = 0; i < args.length; i += 2) {
             if (isNaN(Number(i))) {
-                return [`<code>${i}</code> это не число, попробуй ещё раз`, null];
+                return [`<code>${i}</code> это не число, попробуй ещё раз`];
             }
             dict[args[i]] = args[i + 1];
         }
@@ -324,25 +332,25 @@ class TelegramHandler {
 
     /**
      * `/cur` command handler
-     * @param {TelegrafTypes.Context} context
+     * @param {GrammyTypes.Context | Object} input
      * @returns {[String | null, Object | null]}
      */
-    async cur(context, interaction) {
-        let args = this._parse_args(context, 3).slice(1);
+    async cur(input, interaction) {
+        let args = this._parseArgs(input, 3).slice(1);
         if (!args.length) {
-            return [`А где аргументы?\nПример использования <code>/cur 1 USD TRY</code>`, null];
+            return [`А где аргументы?\nПример использования <code>/cur 1 USD TRY</code>`];
         }
         let amount = Number(args[0]);
         if(isNaN(amount)) {
-            return [`Неправильный первый аргумент, вместо <b>${amount}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`, null];
+            return [`Неправильный первый аргумент, вместо <b>${amount}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`];
         }
-        let from = interaction.get_currency(args[1].toUpperCase());
+        let from = interaction.getCurrency(args[1].toUpperCase());
         if (!from) {
-            return [`Не могу найти валюту <b>${args[1]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
+            return [`Не могу найти валюту <b>${args[1]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`];
         }
-        let to = interaction.get_currency(args[2].toUpperCase());
+        let to = interaction.getCurrency(args[2].toUpperCase());
         if (!to) {
-            return [`Не могу найти валюту <b>${args[2]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
+            return [`Не могу найти валюту <b>${args[2]}</b>\nПример использования <code>/cur 1 USD TRY</code>\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`];
         }
         let result = null;
         try {
@@ -350,12 +358,12 @@ class TelegramHandler {
         }
         catch (err) {
             this.logger.error(`Error while converting currency: ${err.stack}`);
-            return [`Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
+            return [`Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`];
         }
         if(!result) {
-            return [`Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`, null];
+            return [`Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`];
         }
-        return [null, `${result[from.id]} ${from.name} = ${result[to.id].toFixed(2)} ${to.name}`];
+        return [null, `${result[from.id]} ${from.name} = ${result[to.id].toFixed(2)} ${to.name}`, `${result[to.id].toFixed(2)}`];
     }
  }
 
