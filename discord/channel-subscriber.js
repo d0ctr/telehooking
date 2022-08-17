@@ -15,9 +15,9 @@ class ChannelSubscriber {
             return;
         }
 
-        prev_state = this._parse_state(prev_state);
-        new_state = this._parse_state(new_state);
-        watched_state = this._parse_state(watched_state);
+        prev_state = this._parseState(prev_state);
+        new_state = this._parseState(new_state);
+        watched_state = this._parseState(watched_state);
         this.logger.info(`Discord received updated state: ${JSON.stringify(watched_state)}`);
 
         let diff = {
@@ -134,7 +134,7 @@ class ChannelSubscriber {
         this.logger.info(`Catched diff: ${JSON.stringify(diff)}`);
         if (diff && this.telegram_chat_id) {
             try{
-                this.app.telegram_client.send_notification(diff, this.telegram_chat_id);
+                this.app.telegram_client.sendNotification(diff, this.telegram_chat_id);
             }
             catch (e) {
                 this.logger.error(`Couldn't send notification for ${this._guild.name}:${this._channel.name}:`)
@@ -142,7 +142,7 @@ class ChannelSubscriber {
         }
     }
 
-    _parse_state(state) {
+    _parseState(state) {
         if (!state) return;
         let parsed_state = {};
         parsed_state.user_id = state.member.user.id;
@@ -261,7 +261,7 @@ class ChannelSubscriber {
         this.logger.info(`Parsed data: ${JSON.stringify({ active: this.active, telegram_chat_id: this.telegram_chat_id })}`);
     }
 
-    delete_dump() {
+    deleteDump() {
         if (!this.redis) {
             return;
         }

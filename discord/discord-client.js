@@ -18,7 +18,7 @@ class DiscordClient {
         this.client.on('ready', () => {
             this.logger.info('Discord Client is ready.');
             this.health = 'ready';
-            this.restore_data();
+            this.restoreData();
         });
 
         this.client.on('invalidated', () => {
@@ -39,11 +39,11 @@ class DiscordClient {
         })
 
         this.client.on('interactionCreate', async interaction => {
-            this.logger.info(`Discord client received: ${JSON.stringify(this.parse_interaction_info(interaction))}`);
+            this.logger.info(`Discord client received: ${JSON.stringify(this.parseInteractionInfo(interaction))}`);
             
             if (!interaction.isChatInputCommand()) return;
             try {
-                await this.handler.handle_command(interaction);
+                await this.handler.handleCommand(interaction);
             }
             catch (err) {
                 this.logger.error('Error while processing discord command: ', err);
@@ -85,7 +85,7 @@ class DiscordClient {
         this.client.destroy();
     }
 
-    async restore_wordle(guild) {
+    async restoreWordle(guild) {
         if (this.guild_to_wordle[guild.id]) {
             this.logger.info(`There is an active Wordle instance for ${guild.id}, no need for restoration`);
             return;
@@ -99,7 +99,7 @@ class DiscordClient {
         this.guild_to_wordle[guild.id].restore(guild);
     }
 
-    async restore_channel_subscriber(guild, channel_id) {
+    async restoreChannelSubscriber(guild, channel_id) {
         if (!guild && !channel_id) {
             this.logger.info(`Not enough input to restore data.`)
         }
@@ -115,7 +115,7 @@ class DiscordClient {
         this.channel_to_subscriber[channel_id].restore(guild, channel_id);
     }
 
-    async restore_channel_ids(guild) {
+    async restoreChannelIds(guild) {
         if (!this.redis) {
             this.logger.info("Hey! I can't revive without redis instance!");
             return;
@@ -123,7 +123,7 @@ class DiscordClient {
 
         let channel_ids = await this.redis.keys(`${guild.id}:channel_subscriber:*`).catch(err => {
             this.logger.error(`Error while getting channel ids for ${guild.id}:channel_subscriber: ${err.stack}`);
-            setTimeout(this.restore_channel_subscriber.bind(this), 15000, guild)
+            setTimeout(this.restoreChannelSubscriber.bind(this), 15000, guild)
         });
 
         for (let i in channel_ids) {
@@ -131,20 +131,20 @@ class DiscordClient {
         }
 
         for (let channel_id of channel_ids) {
-            this.restore_channel_subscriber(guild, channel_id);
+            this.restoreChannelSubscriber(guild, channel_id);
         }
     }
 
-    async restore_data () {
+    async restoreData () {
         this.client.guilds.cache.map((guild) => {
             this.logger.info(`Found myself in ${guild.name}:${guild.id}`);
             this.logger.info('Reviving database for ^^^')
-            this.restore_wordle(guild);
-            this.restore_channel_ids(guild);
+            this.restoreWordle(guild);
+            this.restoreChannelIds(guild);
         });
     }
     
-    parse_interaction_info (interaction) {
+    parseInteractionInfo (interaction) {
         let info = {};
         if (interaction.guild) {
             info = {

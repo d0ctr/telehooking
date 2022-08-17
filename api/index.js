@@ -64,6 +64,11 @@ class API {
             this.health = 'off';
         });
     }
+
+    setWebhookMiddleware(uri, middleware) {
+        this.express.use(uri, express.json());
+        this.express.use(uri, middleware);
+    }
 }
 
 module.exports = API;

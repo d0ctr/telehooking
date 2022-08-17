@@ -29,7 +29,7 @@ function main() {
 
     app.logger = logger.child({ module: 'index' });
 
-    app.redis = process.env.REDISCLOUD_URL && new Redis(process.env.REDISCLOUD_URL);
+    app.redis = process.env.REDISCLOUD_URL ? new Redis(process.env.REDISCLOUD_URL) : null;
     if (app.redis) {
         let redis_logger = logger.child({ module: 'redis' });
 

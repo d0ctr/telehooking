@@ -22,7 +22,7 @@ class WordleScheduler {
         if (!guild) return;
         this._guild = guild;
 
-        await this._start_scheduling();
+        await this._startScheduling();
     }
 
     stop() {
@@ -34,7 +34,7 @@ class WordleScheduler {
         this.dump();
     }
 
-    async _start_scheduling() {
+    async _startScheduling() {
         let now = new Date();
         now.setUTCSeconds(0, 0);
 
@@ -55,7 +55,7 @@ class WordleScheduler {
             entityMetadata: { location: this.wordle_url }
         });
 
-        this._schedule_timeout = setTimeout(this._start_scheduling.bind(this), this.next_end - Date.now());
+        this._schedule_timeout = setTimeout(this._startScheduling.bind(this), this.next_end - Date.now());
         
         this.running = true;
         
@@ -134,22 +134,22 @@ class WordleScheduler {
         this.next_end = data.next_end ? new Number(data.next_end) : undefined;
         this.running = data.running === 'true';
         
-        this.logger.info(`Parsed data: ${JSON.stringify(this.get_prepared_data())}`);
+        this.logger.info(`Parsed data: ${JSON.stringify(this.getPreparedData())}`);
 
         if (!this.running) {
             return;
         }
 
         if (this.next_end < Date.now() || !this.next_end || !this.next_start) {
-            this._start_scheduling();
+            this._startScheduling();
             return;
         }
         else {
-            this._schedule_timeout = setTimeout(this._start_scheduling.bind(this), this.next_end - Date.now());
+            this._schedule_timeout = setTimeout(this._startScheduling.bind(this), this.next_end - Date.now());
         }
     }
 
-    delete_dump() {
+    deleteDump() {
         if (!this.redis) {
             return;
         }
@@ -158,7 +158,7 @@ class WordleScheduler {
         });
     }
     
-    get_prepared_data() {
+    getPreparedData() {
         let data = {};
         
         data['worlde_url'] = this.wordle_url;
