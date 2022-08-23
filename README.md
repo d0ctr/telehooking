@@ -16,7 +16,7 @@
     </p>
 </div>
 
-<a href="https://t.me/BilderbergButler_bot"><h1>@Bilderberg Butler</h1></a>
+<h1><a href="https://t.me/BilderbergButler_bot">@Bilderberg Butler</a></h1>
 
 This is an application that runs two bots simultaniously: one for Discord and one for Telegram.
 
