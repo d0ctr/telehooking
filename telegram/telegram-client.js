@@ -101,15 +101,15 @@ class TelegramInteraction {
         try {
             if (typeof this.handler[this.command_name] === 'function') {
                 this.logger.info(`Received command: ${this.context.message.text}`);
-                const [err, response] = await this.handler[this.command_name](this.context, this);
+                const [err, response, _, overrides] = await this.handler[this.command_name](this.context, this);
                 if (err) {
-                    return await this._reply(err);
+                    return await this._reply(err, overrides);
                 }
                 if (response instanceof String || typeof response === 'string') {
-                    return await this._reply(response);
+                    return await this._reply(response, overrides);
                 }
                 if (response instanceof Object) {
-                    return await this._replyWithMedia(response);
+                    return await this._replyWithMedia(response, overrides);
                 }
             }
             else {
@@ -168,12 +168,12 @@ class TelegramInteraction {
      * @param {String} text text to send
      * @return {Message | null}
      */
-    async _reply(text) {
+    async _reply(text, overrides) {
         this.logger.info(`Replying with [${text}]`);
         try {
             return await this.context.reply(text, {
                 reply_to_message_id: this.context.message.message_id,
-                disable_web_page_preview: true,
+                disable_web_page_preview: overrides ? Boolean(overrides.disable_web_page_preview) : true,
                 allow_sending_without_reply: true,
                 parse_mode: 'HTML'
             });
@@ -188,15 +188,15 @@ class TelegramInteraction {
      * @param {Object} message may contain text and an id of one of `[animation, audio, document, video, video_note, voice, sticker]`
      * @return {Message | null}
      */
-    async _replyWithMedia(message) {
+    async _replyWithMedia(message, overrides) {
         if (message.text && message.type === 'text') {
-            return this._reply(message.text);
+            return this._reply(message.text, overrides);
         }
         let message_options = {
             reply_to_message_id: this.context.message.message_id,
             caption: message.text,
             parse_mode: 'HTML',
-            disable_web_page_preview: true,
+            disable_web_page_preview: overrides ? Boolean(overrides.disable_web_page_preview) : true,
             allow_sending_without_reply: true
         };
 
@@ -287,7 +287,7 @@ class TelegramInteraction {
                 if (this.client.inline_commands.includes(command_name) && typeof this.handler[command_name] === 'function') {
                     let input = Object.assign({ message: { text: command_text } }, parsed_context)
                     try {
-                        const [err, response, short] = await this.handler[command_name](input, this);
+                        const [err, response, short, overrides] = await this.handler[command_name](input, this);
                         if (err) {
                             query = query.replace(command_text, 'ОШИБКА');
                         }
@@ -308,7 +308,7 @@ class TelegramInteraction {
                                     input_message_content: {
                                         message_text: response.text,
                                         parse_mode: 'HTML',
-                                        disable_web_page_preview: true
+                                        disable_web_page_preview: overrides ? Boolean(overrides.disable_web_page_preview) : true
                                     }
                                 }
                                 query_result.results.push(answer);
@@ -369,7 +369,7 @@ class TelegramClient {
         this.cooldown_map = {};
         this.cooldown_duration = 5 * 1000;
         
-        this.inline_commands = ['calc', 'ping', 'html', 'fizzbuzz'];
+        this.inline_commands = ['calc', 'ping', 'html', 'fizzbuzz', 'gh'];
 
         this.client.command('start', async (ctx) => new TelegramInteraction(this, 'start', ctx).respond());
         this.client.command('help', async (ctx) => new TelegramInteraction(this, 'help', ctx).respond());
@@ -378,6 +378,7 @@ class TelegramClient {
         this.client.command('ping', async (ctx) => new TelegramInteraction(this, 'ping', ctx).respond());
         this.client.command('html', async (ctx) => new TelegramInteraction(this, 'html', ctx).respond());
         this.client.command('fizzbuzz', async (ctx) => new TelegramInteraction(this, 'fizzbuzz', ctx).respond());
+        this.client.command('gh', async (ctx) => new TelegramInteraction(this, 'gh', ctx).respond());
 
         if (app && app.redis) {
             this.inline_commands = this.inline_commands.concat(['get', 'get_list']);
