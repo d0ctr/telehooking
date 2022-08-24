@@ -77,6 +77,7 @@ class TelegramHandler {
 /urban {слово?} - получить значение указанного или случайного слова из <a href="https://www.urbandictionary.com/">Urban Dictionary</>
 /html {текст} - конвертировать полученный текст в отформатированный HTML
 /cur {число} {валюта1} {валюта2} - конвертировать число из валюты1 в валюта2
+/gh {ссылка} - конвертировать ссылку на GitHub в ссылку с Instant View
 `;
         return [null, message];
     }
@@ -379,7 +380,7 @@ class TelegramHandler {
         if (!arg.includes('github')) {
             return ['Чтобы продолжить, нужна ссылка на GitHub.\nПоддерживаются ссылки на Markdown и reStructuredText, на главные странциы репозиториев, а так же на Pull Request и Issue'];
         }
-        return [null, { type: 'text', text: `<a href="https://t.me/iv?url=${arg}&rhash=8643cab1135a25">${arg}</a>`}, null, { disable_web_page_preview: false }];
+        return [null, { type: 'text', text: `<a href="https://t.me/iv?url=${arg}&rhash=8643cab1135a25"> </a><a href="${arg}">${arg}</a>`}, null, { disable_web_page_preview: false }];
     }
 }
 
