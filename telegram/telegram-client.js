@@ -214,7 +214,7 @@ class TelegramInteraction {
         return (message_options.text || null) && this._reply(message_options.caption);
     }
 
-    async _answerQueryWithText(query) {
+    async _answerQueryWithText(query, overrides) {
         let answer = {
             results: [
                 {
@@ -224,7 +224,7 @@ class TelegramInteraction {
                     input_message_content: {
                         message_text: query,
                         parse_mode: 'HTML',
-                        disable_web_page_preview: true
+                        disable_web_page_preview: overrides ? Boolean(overrides.disable_web_page_preview) : true,
                     }
                 }
             ],

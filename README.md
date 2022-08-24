@@ -86,6 +86,7 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /urban {phrase?} — get the random or the phrase (if specified) definition from urban dictionary
   - /html {HTML text} — return submitted text as HTML formatted
   - /cur {amount} {from} {to} — convert amount from one currency to another
+  - /gh {link} — convert GitHub link to a GitHub link with Instant View
 
 ### Inline Query
 
@@ -93,14 +94,15 @@ You can get results of some of the commands by typing somewhat like `@<Bot name>
 
 Not all commands are supported, and they may also give different results compared to the usual use.
 
- - /ping - returns `pong` (embeds in your message)
- - /calc {math eq} — will return only the result of the equation (embeds)
- - /get — will return gif, video, voice, audio, photo, sticker or text that was saved with `/get` in user's private chat with bot (will embed only if didn't contain a caption originally)
- - /get_list — will return only the list of available gets (embeds)
- - /ahegao — will return a random ahegao (embeds)
- - /urban {pharse?} — will return article (doesn't embed)
- - /html — will return the same result as usual (embeds)
- - /cur {amount} {from} {to} — will return only the resulting amount (embeds)
+  - /ping - returns `pong` (embeds in your message)
+  - /calc {math eq} — will return only the result of the equation (embeds)
+  - /get — will return gif, video, voice, audio, photo, sticker or text that was saved with `/get` in user's private chat with bot (will embed only if didn't contain a caption originally)
+  - /get_list — will return only the list of available gets (embeds)
+  - /ahegao — will return a random ahegao (embeds)
+  - /urban {pharse?} — will return article (doesn't embed)
+  - /html — will return the same result as usual (embeds)
+  - /cur {amount} {from} {to} — will return only the resulting amount (embeds)
+  - /gh {link} — convert GitHub link to a GitHub link with Instant View (doesn't embed)
 
 ## API
 
