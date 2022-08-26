@@ -1,4 +1,4 @@
-const { Bot, Context, webhookCallback } = require('grammy');
+const { Bot, Context, webhookCallback, InputFile } = require('grammy');
 const TelegramHandler = require('./telegram-handler');
 const config = require('../config.json');
 const { get_currencies_list } = require('./utils');
@@ -200,14 +200,14 @@ class TelegramInteraction {
             allow_sending_without_reply: true
         };
 
-        let media = message[message.type];
+        let media = message[message.type] instanceof Buffer ? new InputFile(message[message.type], message.filename) : message[message.type];
 
         let media_type = message.type.split('');
         media_type[0] = media_type[0].toUpperCase();
         media_type = media_type.join('');
 
         if (typeof this.context['replyWith' + media_type] === 'function') {
-            this.logger.info(`Replying with [${message_options.caption ? `${message_options.caption} ` : ''}${media_type}:${media}]`);
+            this.logger.info(`Replying with [${message_options.caption ? `${message_options.caption} ` : ''}${media_type}:${message.filename ? message.filename : media}]`);
             return await this.context['replyWith' + media_type](media, message_options);
         }
         this.logger.info(`Can't send what is left of the message ${JSON.stringify(message)}`);
@@ -379,6 +379,7 @@ class TelegramClient {
         this.client.command('html', async (ctx) => new TelegramInteraction(this, 'html', ctx).respond());
         this.client.command('fizzbuzz', async (ctx) => new TelegramInteraction(this, 'fizzbuzz', ctx).respond());
         this.client.command('gh', async (ctx) => new TelegramInteraction(this, 'gh', ctx).respond());
+        this.client.command('curl', async (ctx) => new TelegramInteraction(this, 'curl', ctx).respond());
 
         if (app && app.redis) {
             this.inline_commands = this.inline_commands.concat(['get', 'get_list']);

@@ -103,6 +103,7 @@ Not all commands are supported, and they may also give different results compare
   - /html — will return the same result as usual (embeds)
   - /cur {amount} {from} {to} — will return only the resulting amount (embeds)
   - /gh {link} — convert GitHub link to a GitHub link with Instant View (doesn't embed)
+  - /curl {link} - returns the result of the request to link as headers and file
 
 ## API
 
