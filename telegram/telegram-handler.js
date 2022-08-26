@@ -1,8 +1,10 @@
 const GrammyTypes = require('grammy');
 const mathjs = require('mathjs');
+const axios = require('axios').default;
 const { get_ahegao_url, get_urban_definition, get_conversion } = require('./utils');
 
 const get_regex = /^[a-zA-Zа-яА-Я0-9_-]+$/g;
+const url_start_regex = /^(https*:\/\/)*/;
 
 class TelegramHandler { 
     constructor(client) {
@@ -78,6 +80,7 @@ class TelegramHandler {
 /html {текст} - конвертировать полученный текст в отформатированный HTML
 /cur {число} {валюта1} {валюта2} - конвертировать число из валюты1 в валюта2
 /gh {ссылка} - конвертировать ссылку на GitHub в ссылку с Instant View
+/curl {ссылка} - возвращает результат запроса к указанной ссылке в виде файла
 `;
         return [null, message];
     }
@@ -381,6 +384,77 @@ class TelegramHandler {
             return ['Чтобы продолжить, нужна ссылка на GitHub.\nПоддерживаются ссылки на Markdown и reStructuredText, на главные странциы репозиториев, а так же на Pull Request и Issue'];
         }
         return [null, { type: 'text', text: `<a href="https://t.me/iv?url=${arg}&rhash=8643cab1135a25"> </a><a href="${arg}">${arg}</a>`}, null, { disable_web_page_preview: false }];
+    }
+
+    /**
+     * `/curl` command handler
+     * @param {GrammyTypes.Context | Object} input
+     * @returns {[null, Object | null]} [null, answer]
+     */
+    async curl(input) {
+        let arg = this._parseArgs(input, 1)[1];
+        if (!arg) {
+            return [`Не хватает URL`];
+        }
+        arg = arg.replace(url_start_regex, 'https://');
+        let result;
+        try {
+            result = await axios.get(arg/**, { responseType: 'arraybuffer' } */);
+        }
+        catch (err) {
+            this.logger.error(`Error while curling ${arg}: ${err.stack}`);
+        }
+        if (!result) {
+            arg = arg.replace(url_start_regex, 'http://');
+            try {
+                result = await axios.get(arg);
+            }
+            catch (err) {
+                this.logger.error(`Error while curling ${arg}: ${err.stack}`);
+                return [`Что-то пошло не так\nНе могу получить данные по этой ссылке`];
+            }
+        }
+        if (!result) {
+            return [`Что-то пошло не так\nНе могу получить данные по этой ссылке`];
+        }
+        let filename = arg.split('/').slice(-1)[0] || 'response';
+        let type = 'document';
+        let caption = `<code>HTTP/${result.request.res.httpVersion} ${result.status} ${result.statusText}\n`;
+        for (const [key, value] of Object.entries(result.headers)) {
+            caption += `${key}: ${value}\n`;
+        }
+        caption += '</code>';
+        if (caption.length >= 1024) {
+            caption = `${caption.slice(0, 1014)}...</code>`;
+        }
+        if (result.headers['content-type'].includes('text/html')) {
+            type = 'document';
+            filename = `${filename}.html`;
+            result = Buffer.from(result.data);
+        }
+        else if (result.headers['content-type'].includes('application/json')) {
+            type = 'document';
+            filename = `${filename}.json`;
+            result = Buffer.from(JSON.stringify(result.data, null, 2));
+        }
+        else if (result.headers['content-type'].includes('text/plain')) {
+            type = 'document';
+            filename = `${filename}.txt`;
+            result = Buffer.from(result.data);
+        }
+        else if (result.headers['content-type'].includes('image/')) {
+            type = 'photo';
+            let extension = result.headers['content-type'].split('/')[1];
+            if (!filename.endsWith(extension)){
+                filename = `${filename}.${extension}`;
+            }
+            result = Buffer.from(result.data);
+        }
+        else {
+            type = 'document';
+            result = result.data;
+        }
+        return [null, { type: type, [type]: result, filename: filename, text: caption }];
     }
 }
 
