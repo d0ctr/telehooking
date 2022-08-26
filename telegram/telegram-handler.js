@@ -455,7 +455,7 @@ class TelegramHandler {
         }
         else {
             type = 'document';
-            result = result.data;
+            result = Buffer.from(result.data);
         }
         return [null, { type: type, [type]: result, filename: filename, text: caption }];
     }
