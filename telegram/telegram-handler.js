@@ -442,7 +442,10 @@ class TelegramHandler {
             filename = `${filename}.txt`;
             result = Buffer.from(result.data);
         }
-        else if (result.headers['content-type'].includes('image/')) {
+        else if (result.headers['content-type'].includes('image/png')
+            || result.headers['content-type'].includes('image/jpeg')
+            || result.headers['content-type'].includes('image/jpg')
+            || result.headers['content-type'].includes('image/gif')) {
             type = 'photo';
             let extension = result.headers['content-type'].split('/')[1];
             if (!filename.endsWith(extension)){
