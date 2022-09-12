@@ -87,6 +87,7 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /html {HTML text} — return submitted text as HTML formatted
   - /cur {amount} {from} {to} — convert amount from one currency to another
   - /gh {link} — convert GitHub link to a GitHub link with Instant View
+  - /wiki {query} — returns a list of related Wikipedia pages
 
 ### Inline Query
 

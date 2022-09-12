@@ -137,7 +137,7 @@ async function get_conversion(amount, from_id, to_id) {
         }
     );
     
-    if (res.status !== 200 || res.data.status.error_code != 0) {
+    if (res.status !== 200) {
         new Error(`${res.data.status?.error_code == 0 ? res.data.status.error_message : res.statusText}`);
         return result;
     }
@@ -154,4 +154,36 @@ async function get_conversion(amount, from_id, to_id) {
     return result;
 }
 
-module.exports = { get_ahegao_url, get_urban_definition, get_currencies_list, get_conversion }
+async function searchWikipedia(query) {
+    let result = null; 
+    if (!query) {
+        return null;
+    }
+
+    let res = await axios.get(
+        config.WIKIPEDIA_SEARCH_URL,
+        {
+            params: {
+                action: 'opensearch',
+                format: 'json',
+                search: `${query}`
+            }
+        }
+    );
+
+    if (res.status !== 200) {
+        return result;
+    }
+
+    if (!res.data || !res.data.length || res.data.length < 4 || !res.data[1].length || !res.data[3].length) {
+        return result;
+    }
+
+    result = res.data[1].map((title, index) => {
+        return `<a href="${res.data[3][index]}">${title}</a>`;
+    });
+    
+    return result.join('\n')
+}
+
+module.exports = { get_ahegao_url, get_urban_definition, get_currencies_list, get_conversion, searchWikipedia }
