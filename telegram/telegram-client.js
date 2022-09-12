@@ -398,6 +398,11 @@ class TelegramClient {
             this.client.command('ahegao', async (ctx) => new TelegramInteraction(this, 'ahegao', ctx).respond());
         }
 
+        if (config.WIKIPEDIA_SEARCH_URL) {
+            this.inline_commands.push('wiki');
+            this.client.command('wiki', async (ctx) => new TelegramInteraction(this, 'wiki', ctx).respond());
+        }
+
         if (process.env.COINMARKETCAP_TOKEN && config.COINMARKETCAP_API) {
             this.inline_commands.push('cur');
             this.client.command('cur', async (ctx) => new TelegramInteraction(this, 'cur', ctx).respond());

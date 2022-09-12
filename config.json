@@ -4,5 +4,6 @@
     "DOMAIN": "https://bilderberg-butler.herokuapp.com",
     "URBAN_API": "https://api.urbandictionary.com/v0",
     "COINMARKETCAP_API": "https://pro-api.coinmarketcap.com",
-    "VIDEO_THUMB_URL": "https://github.com/d0ctr/bilderberg-butler/raw/main/docs/bilderberg_club_10p.png"
+    "VIDEO_THUMB_URL": "https://github.com/d0ctr/bilderberg-butler/raw/main/docs/bilderberg_club_10p.png",
+    "WIKIPEDIA_SEARCH_URL": "https://wikipedia.org/w/api.php"
 }

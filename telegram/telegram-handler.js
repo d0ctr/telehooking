@@ -1,7 +1,7 @@
 const GrammyTypes = require('grammy');
 const mathjs = require('mathjs');
 const axios = require('axios').default;
-const { get_ahegao_url, get_urban_definition, get_conversion } = require('./utils');
+const { get_ahegao_url, get_urban_definition, get_conversion, searchWikipedia } = require('./utils');
 
 const get_regex = /^[a-zA-Zа-яА-Я0-9_-]+$/g;
 const url_start_regex = /^(https*:\/\/)*/;
@@ -81,6 +81,7 @@ class TelegramHandler {
 /cur {число} {валюта1} {валюта2} - конвертировать число из валюты1 в валюта2
 /gh {ссылка} - конвертировать ссылку на GitHub в ссылку с Instant View
 /curl {ссылка} - возвращает результат запроса к указанной ссылке в виде файла
+/wiki {запрос} - возвращает подходящие страницы из википедии
 `;
         return [null, message];
     }
@@ -337,7 +338,7 @@ class TelegramHandler {
     /**
      * `/cur` command handler
      * @param {GrammyTypes.Context | Object} input
-     * @returns {[String | null, Object | null]}
+     * @returns {[String | null, Object | null]} [error, answer]
      */
     async cur(input, interaction) {
         let args = this._parseArgs(input, 3).slice(1);
@@ -373,7 +374,7 @@ class TelegramHandler {
     /**
      * `/gh` command handler
      * @param {GrammyTypes.Context | Object} input
-     * @returns {[null, Object | null, null, Object]} [null, answer, null, overrides]
+     * @returns {[String | null, Object | null, null, Object]} [error, answer, null, overrides]
      */
     async gh(input) {
         let arg = this._parseArgs(input, 1)[1];
@@ -389,7 +390,7 @@ class TelegramHandler {
     /**
      * `/curl` command handler
      * @param {GrammyTypes.Context | Object} input
-     * @returns {[null, Object | null]} [null, answer]
+     * @returns {[String | null, Object | null]} [error, answer]
      */
     async curl(input) {
         let arg = this._parseArgs(input, 1)[1];
@@ -458,6 +459,24 @@ class TelegramHandler {
             result = Buffer.from(result.data);
         }
         return [null, { type: type, [type]: result, filename: filename, text: caption }];
+    }
+
+    /**
+     * `/wiki` command handler
+     * @param {GrammyTypes.Context | Object} input
+     * @returns {[null, Object | null, null, Object | null]} [null, answer, null, overrides]
+     */
+    async wiki(input) {
+        let arg = this._parseArgs(input, 1)[1];
+        if (!arg) {
+            return ['Напиши что искать, например <code>/wiki Википедия</code>'];
+        }
+
+        let wikisearch = await searchWikipedia(arg);
+        if (!wikisearch) {
+            return ["Я не смог справится с поиском, видимо спасёт только гугл"];
+        }
+        return [null, wikisearch, null, { disable_web_page_preview: false }];
     }
 }
 
