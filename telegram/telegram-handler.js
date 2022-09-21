@@ -53,7 +53,7 @@ class TelegramHandler {
         }
         let result = null;
         try { 
-            result = `${math_line} = ${mathjs.evaluate(math_line).toString()}`;
+            result = `${math_line} = ${mathjs.evaluate(math_line).toLocaleString({ nu: 'arab' })}`;
         }
         catch (err) {
             this.logger.error('Error while calculating:', err);
