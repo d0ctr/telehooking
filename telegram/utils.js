@@ -1,6 +1,8 @@
 const axios = require('axios').default;
 const config = require('../config.json');
 
+const russian_alphabet_regex = /[а-яА-Я]+/gm;
+
 /**
  * Convert definition by urban dictionary API to text HTML
  * @param {Object} definition 
@@ -154,19 +156,48 @@ async function get_conversion(amount, from_id, to_id) {
     return result;
 }
 
-async function searchWikipedia(query) {
+async function getWikipediaSummary(queryResult, locale) {
+    let result = null;
+
+    if (!queryResult || !locale) {
+        return result;
+    }
+
+    let res = await axios.get(
+        `${config.WIKIPEDIA_SUMMARY_URL[locale]}/${queryResult[1].split('/').pop()}`
+    );
+
+    if (res.status !== 200) {
+        return result;
+    }
+
+    if (!res.data || !res.data.extract) {
+        return result;
+    }
+
+    result = `<a href="${queryResult[1]}">${queryResult[0]}</a>\n\n${res.data.extract}`;
+
+    return result;
+}
+
+async function searchWikipedia(query, locale = null) {
     let result = null; 
     if (!query) {
         return null;
     }
 
+    if (!locale) {
+        locale = query.match(russian_alphabet_regex) ? 'RU' : 'EN';
+    }
+
     let res = await axios.get(
-        config.WIKIPEDIA_SEARCH_URL,
+        config.WIKIPEDIA_SEARCH_URL[locale],
         {
             params: {
                 action: 'opensearch',
                 format: 'json',
-                search: `${query}`
+                search: `${query}`,
+                limit: 1
             }
         }
     );
@@ -176,14 +207,17 @@ async function searchWikipedia(query) {
     }
 
     if (!res.data || !res.data.length || res.data.length < 4 || !res.data[1].length || !res.data[3].length) {
+        if (locale === 'RU') {
+            return searchWikipedia(query, 'EN');
+        }
         return result;
     }
 
-    result = res.data[1].map((title, index) => {
-        return `<a href="${res.data[3][index]}">${title}</a>`;
-    });
-    
-    return result.join('\n')
+    result = res.data.flat();
+
+    result = [result[1], result[3]];
+
+    return await getWikipediaSummary(result, locale);
 }
 
 module.exports = { get_ahegao_url, get_urban_definition, get_currencies_list, get_conversion, searchWikipedia }
