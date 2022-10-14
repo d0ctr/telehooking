@@ -87,7 +87,7 @@ This bot talks with you in Russian (because I've decided so, fill free to add tr
   - /html {HTML text} — return submitted text as HTML formatted
   - /cur {amount} {from} {to} — convert amount from one currency to another
   - /gh {link} — convert GitHub link to a GitHub link with Instant View
-  - /wiki {query} — returns a list of related Wikipedia pages
+  - /wiki {query} — returns a summary from wikipedia
 
 ### Inline Query
 
@@ -105,6 +105,7 @@ Not all commands are supported, and they may also give different results compare
   - /cur {amount} {from} {to} — will return only the resulting amount (embeds)
   - /gh {link} — convert GitHub link to a GitHub link with Instant View (doesn't embed)
   - /curl {link} - returns the result of the request to link as headers and file
+  - /wiki {query} — returns a summary from wikipedia
 
 ## API
 

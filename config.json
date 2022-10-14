@@ -5,5 +5,12 @@
     "URBAN_API": "https://api.urbandictionary.com/v0",
     "COINMARKETCAP_API": "https://pro-api.coinmarketcap.com",
     "VIDEO_THUMB_URL": "https://github.com/d0ctr/bilderberg-butler/raw/main/docs/bilderberg_club_10p.png",
-    "WIKIPEDIA_SEARCH_URL": "https://wikipedia.org/w/api.php"
+    "WIKIPEDIA_SEARCH_URL": {
+        "EN": "https://en.wikipedia.org/w/api.php",
+        "RU": "https://ru.wikipedia.org/w/api.php"
+    },
+    "WIKIPEDIA_SUMMARY_URL": {
+        "EN": "https://en.wikipedia.org/api/rest_v1/page/summary",
+        "RU": "https://ru.wikipedia.org/api/rest_v1/page/summary"
+    }
 }
