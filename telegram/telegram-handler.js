@@ -8,7 +8,6 @@ const url_start_regex = /^(https*:\/\/)*/;
 
 class TelegramHandler { 
     constructor(client) {
-        this.client = client;
         this.logger = client.logger.child({ module: 'telegram-handler' });
     }
 
@@ -347,7 +346,7 @@ class TelegramHandler {
         }
         let amount = Number(args[0]);
         if(isNaN(amount)) {
-            return [`Неправильный первый аргумент, вместо <b>${amount}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`];
+            return [`Неправильный первый аргумент, вместо <b>${args[0]}</b> должно быть число\nПример использования <code>/cur 1 USD TRY</code>`];
         }
         let from = interaction.getCurrency(args[1].toUpperCase());
         if (!from) {
