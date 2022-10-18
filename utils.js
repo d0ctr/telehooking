@@ -1,4 +1,4 @@
-const axios = require('axios');
+const axios = require('axios').default;
 const config = require('./config.json');
 
 async function get_currencies_list() {
@@ -13,19 +13,30 @@ async function get_currencies_list() {
         }
     );
 
-    if (res_cryptocurrency.status !== 200 || res_cryptocurrency.data.status.error_code != 0) {
-        new Error(`${res_cryptocurrency.data.status?.error_code == 0 ? res_cryptocurrency.data.status.error_message : res_cryptocurrency.statusText}`);
+    const {
+        status: crypto_status,
+        data: {
+            status: {
+                error_code: crypto_error_code,
+                error_message: crypto_error_message,
+            },
+            data: crypto_data,
+        } ,
+        statusText: crypto_status_text,
+    } = res_cryptocurrency;
+
+    if (crypto_status !== 200 || crypto_error_code != 0) {
+        new Error(`${crypto_error_code == 0 ? crypto_error_message : crypto_status_text}`);
         return currencies;
     }
 
-    for (let entry of res_cryptocurrency.data.data) {
-        currencies[entry.symbol] = { 
+    for (let entry of crypto_data) {
+        currencies[entry.symbol] = {
             id: entry.id,
             name: entry.name,
             symbol: entry.symbol
         }
     }
-    
     //get fiat
     let res_fiat = await axios.get(
         `${config.COINMARKETCAP_API}/v1/fiat/map`,
@@ -35,13 +46,25 @@ async function get_currencies_list() {
         }
     );
 
-    if (res_fiat.status !== 200 || res_fiat.data.status.error_code != 0) {
-        new Error(`${res_fiat.data.status?.error_code == 0 ? res_fiat.data.status.error_message : res_fiat.statusText}`);
+    const {
+        status: fiat_status,
+        data: {
+            status: {
+                error_code: fiat_error_code,
+                error_message: fiat_error_message,
+            },
+            data: fiat_data,
+        },
+        statusText: fiat_status_text,
+    } = res_fiat;
+
+    if (fiat_status !== 200 || fiat_error_code != 0) {
+        new Error(`${fiat_error_code == 0 ? fiat_error_message : fiat_status_text}`);
         return currencies;
     }
 
-    for (let entry of res_fiat.data.data) {
-        currencies[entry.symbol] = { 
+    for (let entry of fiat_data) {
+        currencies[entry.symbol] = {
             id: entry.id,
             name: entry.name,
             symbol: entry.symbol
