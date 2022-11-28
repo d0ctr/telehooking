@@ -37,6 +37,7 @@ if (ENABLE_LOKI) {
     logger_options.transports.push(
         new LokiTransport({
             host: LOKI_HOST,
+            json: true,
             labels: {
                 ...JSON.parse(LOKI_LABELS),
                 version: VERSION,
