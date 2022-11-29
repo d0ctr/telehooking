@@ -1,4 +1,4 @@
-const {default: axios} = require("axios");
+const axios = require("axios");
 const config = require("../../config.json");
 
 async function getConversion(amount, from_id, to_id) {
@@ -61,7 +61,7 @@ async function convertCurrency(input, interaction) {
         result = await getConversion(amount, from.id, to.id);
     }
     catch (err) {
-        this.logger.error(`Error while converting currency: ${err.stack}`);
+        this.logger.error(`Error while converting currency: ${err.stack || err}`, { args: [...args], error: err.stack || err });
         return [`Что-то пошло не так\nВот полная версия <a href="https://coinmarketcap.com/converter/">конвертора</a>`];
     }
     if(!result) {

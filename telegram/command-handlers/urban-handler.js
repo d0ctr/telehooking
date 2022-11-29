@@ -1,5 +1,5 @@
 const GrammyTypes = require('grammy');
-const {default: axios} = require("axios");
+const axios = require("axios");
 const config = require("../../config.json");
 
 /**
@@ -71,7 +71,7 @@ async function urban(input) {
         definition = await getUrbanDefinition(word);
     }
     catch (err) {
-        this.logger.error(`Error while getting definiton from Urban Dictionary: ${err.stack}`);
+        this.logger.error(`Error while getting definiton from Urban Dictionary: ${err.stack || err}`, { error: err.stack || err, args: [word] });
         return [`Турбулентность по пути в Urban Disctionary, попробуйте сами: <a href="https://www.urbandictionary.com/define.php?term=${word}">ссылка</a>`];
     }
     if (!definition) {
