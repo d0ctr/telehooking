@@ -1,7 +1,4 @@
-require('dotenv-vault-core').config();
-if (process.env.ENV !== 'prod') {
-    require('dotenv').config();
-}
+require('dotenv').config();
 
 const APIServer = require('./api');
 
