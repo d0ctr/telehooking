@@ -4,6 +4,22 @@ const { Bot } = require('grammy');
 const logger = require('../logger').child({ module: 'webhook-handler' });
 
 /**
+ * Replace possible HTML characters
+ * @param {String} text
+ * @returns {String}
+ */
+function escapeHTML(text) {
+    let res = text;
+    res = res
+        .replace(/</gm, '&lt;')
+        .replace(/>/gm, '&gt;')
+        .replace(/&/gm, '&amp;')
+        .replace(/"/gm, '&quot;')
+        .replace(/'/gm, '&#039;');
+    return res;
+}
+
+/**
  * Handler for Webhook POST from another app
  * @param {express.Request} request 
  */
@@ -20,12 +36,12 @@ function formatGithubWebhook(request) {
             break;
         case 'deployment_status':
             text += `Deployment: ${payload.repository.full_name}:${payload.deployment.environment}\n`;
-            text += `Description: <i>${payload.deployment_status.description || ' '}</i>\n`;
+            text += `Description: <i>${escapeHTML(payload.deployment_status.description) || ' '}</i>\n`;
             text += `State: <u>${payload.deployment_status.state.toUpperCase()}</u>\n`;
             text += `<i>by @<a href="${payload.deployment_status.creator.html_url}">${payload.deployment_status.creator.login}</a></i>\n`;
             break;
         default:
-            return `github\n<code>${JSON.stringify(payload, null, 2)}</code>`;
+            return `github\n<code>${escapeHTML(JSON.stringify(payload, null, 2))}</code>`;
     }
 
     return text;
@@ -43,7 +59,7 @@ function formatRailwayWebhook(request) {
     switch(payload.type.toLowerCase()) {
         case 'deploy':
             text += `Deployment: ${payload.project.name}:${payload.service.name}\n`;
-            text += `Commit message: <i>${payload.deployment.meta.commitMessage}</i>\n`;
+            text += `Commit message: <i>${escapeHTML(payload.deployment.meta.commitMessage)}</i>\n`;
             text += `Status: <u>${payload.status}</u>\n`;
             break;
         default:
@@ -61,7 +77,7 @@ function formatDefaultWebhook(request) {
     let text = `<b>${request.params.app}</b>\n`;
 
     if (request.body) {
-        text += `${JSON.stringify(request.body, null, 2)}`;
+        text += `${escapeHTML(JSON.stringify(request.body, null, 2))}`;
     }
 
     return text;
@@ -113,7 +129,7 @@ function handleWebhook(request, response) {
         message_text = formatDefaultWebhook(request);
     }
 
-    new Bot(process.env.WEBHOOK_TELEGRAM_TOKEN).api.sendMessage(request.params.telegram_chat_id, message_text, { parse_mode: 'HTML' })
+    new Bot(process.env.TELEGRAM_TOKEN).api.sendMessage(request.params.telegram_chat_id, message_text, { parse_mode: 'HTML' })
         .then(() => logger.info(
             `Sent webhook [${request.method}: ${request.originalUrl}] data [text: ${message_text}] to [chat: ${request.params.telegram_chat_id}]`,
             { method: request.method, uri: request.originalUrl, telegram_chat_id: request.params.telegram_chat_id, response: message_text }
