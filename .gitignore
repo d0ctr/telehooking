@@ -5,9 +5,7 @@ node_modules/*
 .env
 
 # Workspace files
-.gitpod.yml
 .vscode/*
 .env*
 !.env.project
 !.env.vault
-.flaskenv*
